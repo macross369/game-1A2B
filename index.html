@@ -65,12 +65,11 @@
 
       <!-- 右側控制面板 -->
       <div class="flex items-center gap-2 sm:gap-3">
-        <!-- Firebase 連線指示燈與設定按鈕 -->
-        <button onclick="openModal('firebase-config-modal')" id="firebase-status-badge" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-xs hover:bg-slate-700 transition" title="點擊設定 Firebase 連線">
+        <!-- Firebase 連線指示燈 (純狀態顯示，無設定按鈕或彈窗) -->
+        <div id="firebase-status-badge" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700 text-xs select-none">
           <span id="firebase-status-dot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-          <span id="firebase-status-text" class="text-slate-300">Firebase 準備中</span>
-          <i class="fa-solid fa-gear text-[10px] text-slate-400 ml-1"></i>
-        </button>
+          <span id="firebase-status-text" class="text-slate-300 text-[11px]">Firebase 連線中...</span>
+        </div>
 
         <!-- 位數選擇器 (2 ~ 4 位數) -->
         <div class="flex items-center bg-slate-800/90 rounded-xl p-1 border border-slate-700">
@@ -574,49 +573,6 @@
 
   <!-- Toast 訊息提示容器 -->
   <div id="toast-container" class="fixed top-20 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
-
-  <!-- Firebase 設定專用 Modal (方便 GitHub Pages 跨平板載入同一個 Firebase) -->
-  <div id="firebase-config-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
-        <h3 class="text-lg font-bold text-white flex items-center gap-2">
-          <i class="fa-solid fa-fire text-amber-500"></i> Firebase 雲端連線設定
-        </h3>
-        <button onclick="closeModal('firebase-config-modal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-      </div>
-      <p class="text-xs text-slate-300 mb-3 leading-relaxed">
-        本遊戲專門針對 <strong class="text-cyan-400">GitHub Pages</strong> 設計！多台平板只需連結到同一個 Firebase 專案，就能享受零時差跨裝置對決。
-      </p>
-      <div class="mb-3">
-        <label class="text-[11px] font-semibold text-slate-400 block mb-1">
-          請貼入你的 Firebase Config (JSON 格式或常數物件)：
-        </label>
-        <textarea id="firebase-config-input" rows="6" placeholder='{
-  "apiKey": "AIzaSy...",
-  "authDomain": "your-app.firebaseapp.com",
-  "projectId": "your-app-id",
-  "storageBucket": "your-app.appspot.com",
-  "messagingSenderId": "...",
-  "appId": "..."
-}' class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 font-mono text-xs text-amber-300 focus:outline-none focus:border-indigo-500 custom-scroll">{
-  "apiKey": "AIzaSyBvYIp7BJlm50dh_sq8v233FGB2x0U2kUk",
-  "authDomain": "guess-1a2b-game.firebaseapp.com",
-  "projectId": "guess-1a2b-game",
-  "storageBucket": "guess-1a2b-game.firebasestorage.app",
-  "messagingSenderId": "616616000981",
-  "appId": "1:616616000981:web:6b42fa011801520711915c"
-}</textarea>
-      </div>
-      <div class="flex gap-2">
-        <button onclick="saveAndApplyFirebaseConfig()" class="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold text-xs text-white transition shadow-lg shadow-indigo-600/30">
-          <i class="fa-solid fa-check mr-1"></i> 儲存並連線 Firebase
-        </button>
-        <button onclick="closeModal('firebase-config-modal')" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition">
-          關閉
-        </button>
-      </div>
-    </div>
-  </div>
 
   <!-- 規則說明專用 Modal -->
   <div id="rules-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 hidden">
@@ -1171,8 +1127,9 @@
         return true;
       } catch (err) {
         console.error("Firebase init failed:", err);
-        updateFirebaseStatusUI(false, "連線失敗，請檢查設定");
-        showToast("Firebase 連線失敗，請確認 Config 設定", "error");
+        const errDetail = err.code || err.message || "未知錯誤";
+        updateFirebaseStatusUI(false, "連線失敗: " + errDetail);
+        showToast(`Firebase 連線失敗 (${errDetail})，請檢查後台設定`, "error");
         return false;
       }
     }
@@ -1185,40 +1142,13 @@
         dot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
         label.textContent = text || "Firebase 已連線";
       } else {
-        dot.className = "w-2 h-2 rounded-full bg-amber-400";
-        label.textContent = text || "未設定 Firebase";
+        dot.className = "w-2 h-2 rounded-full bg-rose-500";
+        label.textContent = text || "Firebase 連線失敗";
       }
     }
 
-    // 提供儲存與應用自訂 Firebase Config (在記憶體中生效，方便 GitHub Pages 跨平板使用)
-    window.saveAndApplyFirebaseConfig = async function() {
-      const raw = document.getElementById('firebase-config-input').value.trim();
-      if (!raw) {
-        showToast("請輸入有效的 Firebase Config JSON", "error");
-        return;
-      }
-      try {
-        let clean = raw;
-        if (clean.startsWith('{') && clean.endsWith('}')) {
-          activeFirebaseConfig = JSON.parse(clean);
-        } else {
-          // 支援物件屬性格式處理
-          const jsonLike = clean.replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2": ').replace(/'/g, '"');
-          activeFirebaseConfig = JSON.parse(jsonLike);
-        }
-        closeModal('firebase-config-modal');
-        await initFirebaseService(activeFirebaseConfig);
-      } catch (e) {
-        showToast("JSON 格式解析錯誤，請確認內容！", "error");
-      }
-    };
-
-    // 啟動嘗試連線
-    if (activeFirebaseConfig) {
-      initFirebaseService(activeFirebaseConfig);
-    } else {
-      updateFirebaseStatusUI(false, "點此設定 Firebase");
-    }
+    // 頁面載入後自動連線內建之 Firebase
+    initFirebaseService(activeFirebaseConfig);
 
     /* ==========================================================================
        雙人對抗 (Duel Mode) - Firebase Firestore 跨平板即時同步
@@ -1239,8 +1169,7 @@
     // 建立 1v1 房間 (平板 A)
     window.createDuelFirebaseRoom = async function() {
       if (!db || !auth.currentUser) {
-        openModal('firebase-config-modal');
-        showToast("請先設定 Firebase 才能跨平板連線！", "error");
+        showToast("Firebase 尚未連線成功，請確認後台設定！", "error");
         return;
       }
 
@@ -1289,8 +1218,7 @@
     // 加入 1v1 房間 (平板 B)
     window.joinDuelFirebaseRoom = async function() {
       if (!db || !auth.currentUser) {
-        openModal('firebase-config-modal');
-        showToast("請先設定 Firebase 才能跨平板連線！", "error");
+        showToast("Firebase 尚未連線成功，請確認後台設定！", "error");
         return;
       }
 
@@ -1666,8 +1594,7 @@
     // 建立多人派對房間 (房長)
     window.createMultiFirebaseRoom = async function() {
       if (!db || !auth.currentUser) {
-        openModal('firebase-config-modal');
-        showToast("請先設定 Firebase 才能跨平板連線！", "error");
+        showToast("Firebase 尚未連線成功，請確認後台設定！", "error");
         return;
       }
 
@@ -1717,8 +1644,7 @@
     // 加入多人派對房間 (訪客)
     window.joinMultiFirebaseRoom = async function() {
       if (!db || !auth.currentUser) {
-        openModal('firebase-config-modal');
-        showToast("請先設定 Firebase 才能跨平板連線！", "error");
+        showToast("Firebase 尚未連線成功，請確認後台設定！", "error");
         return;
       }
 
