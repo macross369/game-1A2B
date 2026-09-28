@@ -1,0 +1,2247 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>1A2B 數智對決 - GitHub Pages + Firebase 版</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tone.js for Web Audio effects -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Noto+Sans+TC:wght@400;600;800&display=swap');
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      touch-action: manipulation;
+    }
+    .font-digital {
+      font-family: 'Chakra Petch', monospace;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 9999px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 9999px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+    .shake-animation {
+      animation: shake 0.35s ease-in-out;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white pb-12">
+
+  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur-md sticky top-0 z-30 shadow-md">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <!-- 標題與 Logo -->
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="location.reload()">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-cyan-500 flex items-center justify-center shadow-lg shadow-indigo-500/30 text-white font-bold text-lg">
+          <i class="fa-solid fa-brain"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-extrabold tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-sky-300 to-teal-300">
+            1A2B 數智對決
+          </h1>
+          <p class="text-[11px] text-slate-400">GitHub Pages × Firebase 即時跨平板對抗</p>
+        </div>
+      </div>
+
+      <!-- 右側控制面板 -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Firebase 連線指示燈與設定按鈕 -->
+        <button onclick="openModal('firebase-config-modal')" id="firebase-status-badge" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-xs hover:bg-slate-700 transition" title="點擊設定 Firebase 連線">
+          <span id="firebase-status-dot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+          <span id="firebase-status-text" class="text-slate-300">Firebase 準備中</span>
+          <i class="fa-solid fa-gear text-[10px] text-slate-400 ml-1"></i>
+        </button>
+
+        <!-- 位數選擇器 (2 ~ 4 位數) -->
+        <div class="flex items-center bg-slate-800/90 rounded-xl p-1 border border-slate-700">
+          <span class="text-xs text-slate-400 px-2 font-medium hidden sm:inline"><i class="fa-solid fa-hashtag mr-1"></i>位數:</span>
+          <button onclick="setDigitCount(2)" id="digit-btn-2" class="digit-tab px-2.5 py-1 text-xs rounded-lg font-bold transition text-slate-400 hover:text-white">2</button>
+          <button onclick="setDigitCount(3)" id="digit-btn-3" class="digit-tab px-2.5 py-1 text-xs rounded-lg font-bold transition text-slate-400 hover:text-white">3</button>
+          <button onclick="setDigitCount(4)" id="digit-btn-4" class="digit-tab px-2.5 py-1 text-xs rounded-lg font-bold transition bg-indigo-600 text-white shadow">4</button>
+        </div>
+
+        <!-- 音效切換 -->
+        <button id="sound-btn" onclick="toggleSound()" class="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 hover:text-white hover:bg-slate-700 transition" title="開關音效">
+          <i class="fa-solid fa-volume-high text-sm"></i>
+        </button>
+
+        <!-- 規則說明 -->
+        <button onclick="openModal('rules-modal')" class="px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-sky-400 flex items-center gap-1.5 transition">
+          <i class="fa-regular fa-circle-question"></i>
+          <span class="hidden sm:inline">規則</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 mt-6 flex-1 w-full flex flex-col">
+    <!-- 模式選擇 Tabs -->
+    <div class="grid grid-cols-3 gap-2 p-1.5 bg-slate-900/90 border border-slate-800 rounded-2xl max-w-lg mx-auto w-full mb-6 shadow-inner">
+      <button onclick="switchMode('solo')" id="mode-btn-solo" class="mode-btn py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition bg-indigo-600 text-white shadow-md">
+        <i class="fa-solid fa-user"></i>
+        <span>個人闖關</span>
+      </button>
+      <button onclick="switchMode('duel')" id="mode-btn-duel" class="mode-btn py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition text-slate-400 hover:text-white">
+        <i class="fa-solid fa-gamepad"></i>
+        <span>雙人對決</span>
+      </button>
+      <button onclick="switchMode('multi')" id="mode-btn-multi" class="mode-btn py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition text-slate-400 hover:text-white">
+        <i class="fa-solid fa-users"></i>
+        <span>多人連線 (≤20)</span>
+      </button>
+    </div>
+
+    <!-- 模式 1：個人模式視圖 -->
+    <div id="view-solo" class="mode-view flex flex-col lg:flex-row gap-6">
+      <!-- 左側操作與鍵盤區 -->
+      <div class="lg:w-7/12 flex flex-col gap-4">
+        <!-- 計時與次數狀態列 -->
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-3 flex items-center justify-between shadow">
+            <span class="text-xs text-slate-400"><i class="fa-regular fa-clock mr-1.5 text-cyan-400"></i>耗時</span>
+            <span id="solo-timer" class="font-digital text-lg font-bold text-cyan-300">00:00</span>
+          </div>
+          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-3 flex items-center justify-between shadow">
+            <span class="text-xs text-slate-400"><i class="fa-solid fa-shoe-prints mr-1.5 text-indigo-400"></i>猜測步數</span>
+            <span id="solo-attempts" class="font-digital text-lg font-bold text-indigo-300">0 步</span>
+          </div>
+        </div>
+
+        <!-- 遊戲主面板 -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col items-center relative overflow-hidden">
+          
+          <!-- 未開始遮罩層（醒目的「開始遊戲」按鈕） -->
+          <div id="solo-start-overlay" class="absolute inset-0 bg-slate-950/95 backdrop-blur-md z-20 flex flex-col items-center justify-center p-6 text-center">
+            <div class="w-16 h-16 rounded-3xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/40 flex items-center justify-center text-3xl mb-4 shadow-lg shadow-indigo-500/30">
+              <i class="fa-solid fa-play ml-1"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2">準備好挑戰 1A2B 了嗎？</h3>
+            <p class="text-xs text-slate-400 mb-6 max-w-xs leading-relaxed">
+              點擊「開始遊戲」按鈕後，電腦將隨機產生一組 <span class="text-indigo-400 font-bold current-digit-label">4</span> 位不重複秘密數字，依據 ?A?B 線索推理破解！
+            </p>
+            <button onclick="startSoloGame()" class="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 hover:scale-105 active:scale-95 text-white font-bold text-base shadow-xl shadow-indigo-600/30 transition-all flex items-center gap-2">
+              <i class="fa-solid fa-bolt"></i> 開始遊戲
+            </button>
+          </div>
+
+          <!-- 輸入位數說明 -->
+          <div class="text-xs font-semibold text-slate-400 mb-1">
+            目標：推理出 <span class="current-digit-label text-indigo-400 font-bold">4</span> 位不重複數字 (0-9)
+          </div>
+
+          <!-- 數字輸入槽位 -->
+          <div id="solo-display-slots" class="flex gap-2 sm:gap-3 my-3">
+            <!-- JS 動態生成 -->
+          </div>
+
+          <!-- 虛擬按鍵 -->
+          <div class="w-full max-w-sm mt-2 grid grid-cols-3 gap-2">
+            <button onclick="keypadPress('1')" class="py-3 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-lg font-digital font-bold border border-slate-700/60 shadow">1</button>
+            <button onclick="keypadPress('2')" class="py-3 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-lg font-digital font-bold border border-slate-700/60 shadow">2</button>
+            <button onclick="keypadPress('3')" class="py-3 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-lg font-digital font-bold border border-slate-700/60 shadow">3</button>
+            <button onclick="keypadPress('4')" class="py-3 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-lg font-digital font-bold border border-slate-700/60 shadow">4</button>
+            <button onclick="keypadPress('5')" class="py-3 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-lg font-digital font-bold border border-slate-700/60 shadow">5</button>
+            <button onclick="keypadPress('6')" class="py-3 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-lg font-digital font-bold border border-slate-700/60 shadow">6</button>
+            <button onclick="keypadPress('7')" class="py-3 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-lg font-digital font-bold border border-slate-700/60 shadow">7</button>
+            <button onclick="keypadPress('8')" class="py-3 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-lg font-digital font-bold border border-slate-700/60 shadow">8</button>
+            <button onclick="keypadPress('9')" class="py-3 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-lg font-digital font-bold border border-slate-700/60 shadow">9</button>
+            <button onclick="keypadBackspace()" class="py-3 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 text-rose-400 active:scale-95 text-sm font-bold border border-rose-800/40 flex items-center justify-center shadow">
+              <i class="fa-solid fa-delete-left text-lg"></i>
+            </button>
+            <button onclick="keypadPress('0')" class="py-3 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-lg font-digital font-bold border border-slate-700/60 shadow">0</button>
+            <button onclick="submitGuess()" class="py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 active:scale-95 text-white text-sm font-bold shadow-lg shadow-emerald-900/30 flex items-center justify-center">
+              確認 <i class="fa-solid fa-arrow-right ml-1"></i>
+            </button>
+          </div>
+
+          <!-- 快捷操作列 -->
+          <div class="flex items-center gap-4 mt-4 text-xs">
+            <button onclick="startSoloGame()" class="text-indigo-400 hover:text-indigo-300 transition flex items-center gap-1">
+              <i class="fa-solid fa-rotate-right"></i> 重新開始 (新題目)
+            </button>
+            <span class="text-slate-700">•</span>
+            <button onclick="giveUpSolo()" class="text-rose-400 hover:text-rose-300 transition flex items-center gap-1">
+              <i class="fa-regular fa-eye"></i> 看解答
+            </button>
+          </div>
+        </div>
+
+        <!-- 筆記草稿盤 -->
+        <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-4">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+              <i class="fa-solid fa-highlighter text-amber-400"></i> 推理筆記盤 (點擊切換：普通 / ✓確認 / ✗排除)
+            </span>
+            <button onclick="resetScratchpad()" class="text-[11px] text-slate-400 hover:text-slate-200 underline">重置標記</button>
+          </div>
+          <div id="scratchpad-container" class="grid grid-cols-5 sm:grid-cols-10 gap-2"></div>
+        </div>
+      </div>
+
+      <!-- 右側歷史記錄區 -->
+      <div class="lg:w-5/12 flex flex-col bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-2">
+          <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+            <i class="fa-solid fa-clock-rotate-left text-indigo-400"></i> 猜測歷史
+          </h3>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-400">
+            <span id="solo-history-count">0</span> 次紀錄
+          </span>
+        </div>
+        <div id="solo-history-list" class="flex-1 overflow-y-auto custom-scroll space-y-2 max-h-[480px] pr-1">
+          <div class="text-center py-12 text-slate-500 text-xs">點擊「開始遊戲」開始挑戰！</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 模式 2：雙人對決視圖 (Firebase 跨平板 1v1) -->
+    <div id="view-duel" class="mode-view hidden flex-col gap-6">
+      
+      <!-- 2.1 雙人連線大廳 (Lobby) -->
+      <div id="duel-lobby-card" class="max-w-xl mx-auto w-full bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-2xl">
+        <div class="flex items-center justify-center w-14 h-14 mx-auto rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 text-2xl mb-3">
+          <i class="fa-solid fa-people-arrows"></i>
+        </div>
+        <h2 class="text-xl font-bold text-center text-white mb-1">雙平板 1v1 雲端對決</h2>
+        <p class="text-xs text-center text-slate-400 mb-6">兩台平板透過 Firebase 雲端秒速連線！各自秘密出題給對方猜，率先破譯者勝！</p>
+
+        <!-- 暱稱輸入 -->
+        <div class="mb-4">
+          <label class="text-xs font-semibold text-slate-300 block mb-1">你的代號 / 暱稱：</label>
+          <input type="text" id="duel-player-name-input" value="特工 1" maxlength="10"
+                 class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 font-bold">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- 建立房間 (平板 A) -->
+          <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-4 flex flex-col justify-between">
+            <div>
+              <span class="text-xs text-indigo-400 font-bold block mb-1">我是第一台平板</span>
+              <h4 class="text-sm font-bold text-white mb-2">建立全新對決房間</h4>
+              <p class="text-[11px] text-slate-400 mb-3">產生專屬 4 位數字邀請碼，讓對手平板輸入直連。</p>
+            </div>
+            <button onclick="createDuelFirebaseRoom()" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold text-xs text-white shadow-lg transition">
+              <i class="fa-solid fa-plus-circle mr-1"></i> 建立房間
+            </button>
+          </div>
+
+          <!-- 加入房間 (平板 B) -->
+          <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-4 flex flex-col justify-between">
+            <div>
+              <span class="text-xs text-pink-400 font-bold block mb-1">我是第二台平板</span>
+              <h4 class="text-sm font-bold text-white mb-2">輸入 4 位數字加入</h4>
+              <input type="text" inputmode="numeric" pattern="[0-9]*" id="duel-join-code-input" placeholder="例如：5821" maxlength="4"
+                     class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-center text-sm font-digital text-amber-400 tracking-widest focus:outline-none focus:border-pink-500 mb-3">
+            </div>
+            <button onclick="joinDuelFirebaseRoom()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 font-bold text-xs text-white shadow-lg transition">
+              <i class="fa-solid fa-right-to-bracket mr-1"></i> 連線加入
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2.2 等待對手加入 (平板 A 畫面) -->
+      <div id="duel-waiting-card" class="max-w-md mx-auto w-full bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-2xl text-center hidden">
+        <div class="animate-pulse w-14 h-14 mx-auto rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/40 flex items-center justify-center text-2xl mb-3">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+        </div>
+        <h3 class="text-lg font-bold text-white mb-1">房間已建立，等待對手平板加入</h3>
+        <p class="text-xs text-slate-400 mb-4">請在第二台平板開啟 GitHub Pages 網址，輸入此邀請碼：</p>
+        <div class="p-3 bg-slate-800/80 rounded-2xl border border-indigo-500/50 mb-5 inline-block px-8">
+          <span id="duel-waiting-room-code" class="text-3xl font-digital font-bold text-amber-400 tracking-widest select-all">----</span>
+        </div>
+        <div class="flex justify-center gap-2 text-xs">
+          <button onclick="leaveDuelRoom()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300">
+            取消並退出
+          </button>
+        </div>
+      </div>
+
+      <!-- 2.3 秘密出題階段 (兩台平板各自秘密出題給對方) -->
+      <div id="duel-setup-stage" class="max-w-xl mx-auto w-full bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-2xl text-center hidden">
+        <div class="w-14 h-14 mx-auto rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center text-2xl mb-3">
+          <i class="fa-solid fa-user-secret"></i>
+        </div>
+        <h3 class="text-lg font-bold text-white mb-1">請為對手設定秘密密碼</h3>
+        <p class="text-xs text-slate-400 mb-5">對手將嘗試破譯此組數字，請不要讓對方看到螢幕！</p>
+
+        <!-- 設定槽位 -->
+        <div id="duel-setup-slots" class="flex justify-center gap-3 mb-4"></div>
+
+        <!-- 虛擬小鍵盤 -->
+        <div class="max-w-xs mx-auto grid grid-cols-3 gap-2 mb-4">
+          <button onclick="duelSetupPress('1')" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-base font-digital font-bold">1</button>
+          <button onclick="duelSetupPress('2')" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-base font-digital font-bold">2</button>
+          <button onclick="duelSetupPress('3')" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-base font-digital font-bold">3</button>
+          <button onclick="duelSetupPress('4')" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-base font-digital font-bold">4</button>
+          <button onclick="duelSetupPress('5')" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-base font-digital font-bold">5</button>
+          <button onclick="duelSetupPress('6')" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-base font-digital font-bold">6</button>
+          <button onclick="duelSetupPress('7')" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-base font-digital font-bold">7</button>
+          <button onclick="duelSetupPress('8')" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-base font-digital font-bold">8</button>
+          <button onclick="duelSetupPress('9')" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-base font-digital font-bold">9</button>
+          <button onclick="duelSetupBack()" class="py-2.5 rounded-xl bg-rose-950/40 text-rose-400 font-bold"><i class="fa-solid fa-delete-left"></i></button>
+          <button onclick="duelSetupPress('0')" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-base font-digital font-bold">0</button>
+          <button onclick="duelSetupRandom()" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 text-xs font-bold"><i class="fa-solid fa-dice mr-1"></i>隨機</button>
+        </div>
+
+        <button onclick="submitDuelSecretFirebase()" id="duel-setup-submit" class="w-full max-w-xs py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold text-sm shadow-lg shadow-indigo-600/30 transition">
+          鎖定並送出密碼
+        </button>
+        <div id="duel-waiting-peer-notice" class="hidden text-xs text-amber-400 font-semibold animate-pulse mt-3">
+          <i class="fa-solid fa-spinner fa-spin mr-1"></i> 你的密碼已鎖定！等待對手設定完成...
+        </div>
+      </div>
+
+      <!-- 2.4 對戰正式進行中看板 -->
+      <div id="duel-battle-stage" class="hidden flex-col gap-6">
+        <!-- 頂部回合指示列 -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-lg flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <span class="text-xs px-2.5 py-1 rounded-lg bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 font-digital font-bold" id="duel-room-tag">ROOM</span>
+            <span id="duel-round-label" class="font-digital text-cyan-400 font-bold text-sm">Round 1</span>
+          </div>
+          <div id="duel-turn-banner" class="text-sm sm:text-base font-bold text-white flex items-center gap-2"></div>
+          <button onclick="leaveDuelRoom()" class="text-xs text-slate-400 hover:text-rose-400 underline">
+            退出房間
+          </button>
+        </div>
+
+        <!-- 雙方歷史記錄並排 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- 玩家 1 看板 -->
+          <div id="duel-p1-card" class="bg-slate-900/80 border-2 border-indigo-500/40 rounded-2xl p-4 flex flex-col">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-3">
+              <span id="duel-p1-name-tag" class="font-bold text-indigo-400 flex items-center gap-1.5 text-xs sm:text-sm">
+                <i class="fa-solid fa-user-ninja"></i> 玩家 1
+              </span>
+              <span class="text-[11px] text-slate-400">正在破譯對手的密碼</span>
+            </div>
+            <div id="duel-p1-history" class="h-48 overflow-y-auto custom-scroll space-y-2 pr-1"></div>
+          </div>
+
+          <!-- 玩家 2 看板 -->
+          <div id="duel-p2-card" class="bg-slate-900/80 border-2 border-transparent rounded-2xl p-4 flex flex-col">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-3">
+              <span id="duel-p2-name-tag" class="font-bold text-pink-400 flex items-center gap-1.5 text-xs sm:text-sm">
+                <i class="fa-solid fa-user-astronaut"></i> 玩家 2
+              </span>
+              <span class="text-[11px] text-slate-400">正在破譯對手的密碼</span>
+            </div>
+            <div id="duel-p2-history" class="h-48 overflow-y-auto custom-scroll space-y-2 pr-1"></div>
+          </div>
+        </div>
+
+        <!-- 對戰輸入面板 (有輪值鎖定遮罩) -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 max-w-lg mx-auto w-full flex flex-col items-center relative overflow-hidden">
+          <!-- 對手回合鎖定遮罩 -->
+          <div id="duel-turn-lock" class="absolute inset-0 bg-slate-950/85 backdrop-blur-sm z-20 flex flex-col items-center justify-center p-4 text-center hidden">
+            <div class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center text-xl mb-2 animate-bounce">
+              <i class="fa-solid fa-hourglass-half"></i>
+            </div>
+            <p id="duel-turn-lock-msg" class="text-xs text-slate-300 font-semibold">對手正在思考猜測，請稍候...</p>
+          </div>
+
+          <div class="text-xs text-slate-300 mb-2 font-medium" id="duel-current-guesser-hint">請輸入猜測：</div>
+          <div id="duel-input-slots" class="flex gap-2 sm:gap-3 my-2"></div>
+
+          <div class="w-full max-w-sm mt-3 grid grid-cols-3 gap-2">
+            <button onclick="duelGuessPress('1')" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-base font-digital font-bold">1</button>
+            <button onclick="duelGuessPress('2')" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-base font-digital font-bold">2</button>
+            <button onclick="duelGuessPress('3')" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-base font-digital font-bold">3</button>
+            <button onclick="duelGuessPress('4')" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-base font-digital font-bold">4</button>
+            <button onclick="duelGuessPress('5')" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-base font-digital font-bold">5</button>
+            <button onclick="duelGuessPress('6')" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-base font-digital font-bold">6</button>
+            <button onclick="duelGuessPress('7')" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-base font-digital font-bold">7</button>
+            <button onclick="duelGuessPress('8')" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-base font-digital font-bold">8</button>
+            <button onclick="duelGuessPress('9')" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-base font-digital font-bold">9</button>
+            <button onclick="duelGuessBack()" class="py-2.5 rounded-xl bg-rose-950/40 text-rose-400 font-bold"><i class="fa-solid fa-delete-left"></i></button>
+            <button onclick="duelGuessPress('0')" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-base font-digital font-bold">0</button>
+            <button onclick="submitDuelGuessFirebase()" class="py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold text-xs text-white">確認猜測</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 模式 3：多人派對視圖 (Firebase 跨平板開房，最多 20 人) -->
+    <div id="view-multi" class="mode-view hidden flex-col gap-6">
+      
+      <!-- 3.1 多人連線大廳 (Lobby) -->
+      <div id="multi-lobby-card" class="max-w-xl mx-auto w-full bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-2xl">
+        <div class="flex items-center justify-center w-14 h-14 mx-auto rounded-2xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-2xl mb-3">
+          <i class="fa-solid fa-users"></i>
+        </div>
+        <h2 class="text-xl font-bold text-center text-white mb-1">多人派對雲端對決 (最多 20 人)</h2>
+        <p class="text-xs text-center text-slate-400 mb-6">所有人拿各自平板連線加入，共享破譯線索池輪流猜測，最後一擊命中者奪冠！</p>
+
+        <!-- 暱稱輸入 -->
+        <div class="mb-4">
+          <label class="text-xs font-semibold text-slate-300 block mb-1">你的代號 / 暱稱：</label>
+          <input type="text" id="multi-player-name-input" value="破譯特工" maxlength="10"
+                 class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500 font-bold">
+        </div>
+
+        <!-- 多人對戰子模式選擇 (房長開房專用) -->
+        <div class="mb-5 bg-slate-800/80 border border-slate-700/80 rounded-2xl p-3">
+          <span class="text-xs font-bold text-cyan-300 block mb-2">
+            <i class="fa-solid fa-sliders mr-1.5"></i>開房規則設定 (由房長選定)：
+          </span>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <label class="flex items-start gap-2.5 p-2.5 rounded-xl border border-cyan-500/50 bg-cyan-950/30 cursor-pointer hover:bg-cyan-900/30 transition">
+              <input type="radio" name="multi-submode" value="turn" checked class="mt-0.5 text-cyan-500 focus:ring-cyan-500">
+              <div>
+                <span class="text-xs font-bold text-white block">🔄 輪流接力猜</span>
+                <span class="text-[11px] text-slate-400 block leading-tight">輪流出招，共享全場線索，最後一擊奪冠</span>
+              </div>
+            </label>
+            <label class="flex items-start gap-2.5 p-2.5 rounded-xl border border-slate-700 bg-slate-900/40 cursor-pointer hover:bg-slate-800/60 transition">
+              <input type="radio" name="multi-submode" value="race" class="mt-0.5 text-amber-400 focus:ring-amber-400">
+              <div>
+                <span class="text-xs font-bold text-amber-300 block">⚡ 全員競速搶猜</span>
+                <span class="text-[11px] text-slate-400 block leading-tight">全員同時各自猜！零等待，比誰先解出</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- 建立派對房間 (房長) -->
+          <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-4 flex flex-col justify-between">
+            <div>
+              <span class="text-xs text-cyan-400 font-bold block mb-1">房長開局</span>
+              <h4 class="text-sm font-bold text-white mb-2">建立全新多人房間</h4>
+              <p class="text-[11px] text-slate-400 mb-3">生成專屬 4 位數字邀請碼，可容納多達 20 台平板同場競技。</p>
+            </div>
+            <button onclick="createMultiFirebaseRoom()" class="w-full py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-bold text-xs text-white shadow-lg transition">
+              <i class="fa-solid fa-crown mr-1"></i> 建立派對房間
+            </button>
+          </div>
+
+          <!-- 加入既有派對 (朋友/學生平板) -->
+          <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-4 flex flex-col justify-between">
+            <div>
+              <span class="text-xs text-amber-400 font-bold block mb-1">成員加入</span>
+              <h4 class="text-sm font-bold text-white mb-2">輸入 4 位數字代碼</h4>
+              <input type="text" inputmode="numeric" pattern="[0-9]*" id="join-room-code-input" placeholder="例如：6392" maxlength="4"
+                     class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-center text-sm font-digital text-cyan-400 tracking-widest focus:outline-none focus:border-cyan-500 mb-3">
+            </div>
+            <button onclick="joinMultiFirebaseRoom()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 font-bold text-xs text-white shadow-lg transition">
+              <i class="fa-solid fa-arrow-right-to-bracket mr-1"></i> 加入房間
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3.2 多人等待室 (Waiting Room) -->
+      <div id="multi-waiting-card" class="max-w-xl mx-auto w-full bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-2xl hidden">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+          <div>
+            <span class="text-[11px] text-slate-400 block">房間邀請代碼</span>
+            <span id="waiting-room-code" class="text-3xl font-digital font-bold text-amber-400 tracking-widest select-all">----</span>
+          </div>
+          <div class="text-right space-y-0.5">
+            <div>
+              <span class="text-[10px] text-slate-400 mr-1">位數:</span>
+              <span id="waiting-room-digits" class="text-xs font-bold text-cyan-300">4 位數</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 mr-1">模式:</span>
+              <span id="waiting-room-submode" class="text-xs font-bold text-amber-400">🔄 輪流接力</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-5">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+              <i class="fa-solid fa-users text-cyan-400"></i> 已連線玩家名單 (<span id="waiting-player-count">0</span> / 20 人)
+            </span>
+            <span class="text-[11px] text-slate-400">雲端即時同步中</span>
+          </div>
+          <div id="waiting-players-list" class="max-h-56 overflow-y-auto custom-scroll space-y-2 pr-1"></div>
+        </div>
+
+        <!-- 房長啟動按鈕 -->
+        <div id="waiting-host-controls" class="space-y-2 hidden">
+          <button id="btn-start-game" onclick="startMultiFirebaseGame()" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 font-bold text-white shadow-lg shadow-indigo-600/30 transition text-sm">
+            <i class="fa-solid fa-play mr-1.5"></i> 全員到齊，開始破譯大戰！
+          </button>
+          <p class="text-center text-[11px] text-slate-400">至少需 2 人即可啟動遊戲</p>
+        </div>
+
+        <!-- 成員等待提示 -->
+        <div id="waiting-client-notice" class="text-center py-3 bg-slate-800/60 rounded-xl border border-slate-700 hidden">
+          <span class="text-xs text-amber-400 font-semibold animate-pulse">
+            <i class="fa-solid fa-spinner fa-spin mr-1"></i> 等待房長啟動遊戲中...
+          </span>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-slate-800 text-center">
+          <button onclick="leaveMultiRoom()" class="text-xs text-slate-400 hover:text-rose-400 underline">
+            退出房間
+          </button>
+        </div>
+      </div>
+
+      <!-- 3.3 多人戰局進行中 -->
+      <div id="multi-game-card" class="hidden flex-col gap-6">
+        <!-- 頂部資訊列 -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 shadow-lg">
+          <div class="flex items-center gap-3">
+            <span class="text-xs px-2.5 py-1 rounded-lg bg-cyan-600/30 border border-cyan-500/40 text-cyan-300 font-digital font-bold" id="game-room-code-tag">ROOM</span>
+            <span id="multi-mode-badge" class="px-2 py-0.5 rounded-lg text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">模式</span>
+            <div id="multi-turn-player-tag" class="px-3 py-1.5 rounded-xl bg-indigo-500/20 text-indigo-300 font-bold border border-indigo-500/40 text-xs sm:text-sm flex items-center gap-2">
+              <!-- 當前輪到的玩家或競速搶猜狀態 -->
+            </div>
+            <span id="multi-total-players-tag" class="text-xs text-slate-400 hidden sm:inline"></span>
+          </div>
+          <button onclick="leaveMultiRoom()" class="text-xs text-slate-400 hover:text-rose-400 underline">退出房間</button>
+        </div>
+
+        <!-- 遊戲主體：左側猜測、右側共享歷史/競速看板 -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div class="lg:col-span-6 flex flex-col gap-4">
+            <!-- 猜測槽 -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 flex flex-col items-center relative overflow-hidden">
+              <!-- 輪值鎖定遮罩 (競速模式下隱藏) -->
+              <div id="multi-turn-lock" class="absolute inset-0 bg-slate-950/85 backdrop-blur-sm z-20 flex flex-col items-center justify-center p-4 text-center hidden">
+                <div class="w-12 h-12 rounded-2xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center text-xl mb-2 animate-bounce">
+                  <i class="fa-solid fa-hourglass-half"></i>
+                </div>
+                <p id="multi-turn-lock-msg" class="text-xs text-slate-300 font-semibold">輪到其他特工思考中...</p>
+              </div>
+
+              <div class="text-xs text-slate-400 mb-2" id="multi-input-hint">輸入 <span class="current-digit-label text-cyan-400 font-bold">4</span> 位猜測：</div>
+              <div id="multi-input-slots" class="flex gap-2 sm:gap-3 my-3"></div>
+
+              <!-- 鍵盤 -->
+              <div class="w-full max-w-sm mt-3 grid grid-cols-3 gap-2">
+                <button onclick="multiKeypadPress('1')" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-base font-digital font-bold">1</button>
+                <button onclick="multiKeypadPress('2')" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-base font-digital font-bold">2</button>
+                <button onclick="multiKeypadPress('3')" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-base font-digital font-bold">3</button>
+                <button onclick="multiKeypadPress('4')" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-base font-digital font-bold">4</button>
+                <button onclick="multiKeypadPress('5')" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-base font-digital font-bold">5</button>
+                <button onclick="multiKeypadPress('6')" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-base font-digital font-bold">6</button>
+                <button onclick="multiKeypadPress('7')" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-base font-digital font-bold">7</button>
+                <button onclick="multiKeypadPress('8')" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-base font-digital font-bold">8</button>
+                <button onclick="multiKeypadPress('9')" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-base font-digital font-bold">9</button>
+                <button onclick="multiKeypadBack()" class="py-2.5 rounded-xl bg-rose-950/40 text-rose-400 font-bold"><i class="fa-solid fa-delete-left"></i></button>
+                <button onclick="multiKeypadPress('0')" class="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-base font-digital font-bold">0</button>
+                <button onclick="submitMultiGuessFirebase()" class="py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-bold text-xs text-white">確認猜測</button>
+              </div>
+            </div>
+
+            <!-- 多人輪值排程順序 或 全員破譯進度 -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4">
+              <span id="multi-player-badges-title" class="text-xs font-semibold text-slate-400 block mb-2">輪流出招順序 (最多 20 人)：</span>
+              <div id="multi-player-badges" class="flex flex-wrap gap-2 max-h-36 overflow-y-auto custom-scroll pr-1"></div>
+            </div>
+          </div>
+
+          <!-- 線索與戰況記錄區 -->
+          <div class="lg:col-span-6 bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex flex-col">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-2">
+              <h3 id="multi-history-title" class="text-sm font-bold text-slate-200 flex items-center gap-2">
+                <i class="fa-solid fa-list-check text-cyan-400"></i> 全場共用線索池
+              </h3>
+              <span class="text-xs text-slate-400" id="multi-history-counter">0 條紀錄</span>
+            </div>
+            <div id="multi-history-list" class="flex-1 overflow-y-auto custom-scroll space-y-2 max-h-[460px] pr-1"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Toast 訊息提示容器 -->
+  <div id="toast-container" class="fixed top-20 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Firebase 設定專用 Modal (方便 GitHub Pages 跨平板載入同一個 Firebase) -->
+  <div id="firebase-config-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-fire text-amber-500"></i> Firebase 雲端連線設定
+        </h3>
+        <button onclick="closeModal('firebase-config-modal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <p class="text-xs text-slate-300 mb-3 leading-relaxed">
+        本遊戲專門針對 <strong class="text-cyan-400">GitHub Pages</strong> 設計！多台平板只需連結到同一個 Firebase 專案，就能享受零時差跨裝置對決。
+      </p>
+      <div class="mb-3">
+        <label class="text-[11px] font-semibold text-slate-400 block mb-1">
+          請貼入你的 Firebase Config (JSON 格式或常數物件)：
+        </label>
+        <textarea id="firebase-config-input" rows="6" placeholder='{
+  "apiKey": "AIzaSy...",
+  "authDomain": "your-app.firebaseapp.com",
+  "projectId": "your-app-id",
+  "storageBucket": "your-app.appspot.com",
+  "messagingSenderId": "...",
+  "appId": "..."
+}' class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 font-mono text-xs text-amber-300 focus:outline-none focus:border-indigo-500 custom-scroll">{
+  "apiKey": "AIzaSyBvYIp7BJlm50dh_sq8v233FGB2x0U2kUk",
+  "authDomain": "guess-1a2b-game.firebaseapp.com",
+  "projectId": "guess-1a2b-game",
+  "storageBucket": "guess-1a2b-game.firebasestorage.app",
+  "messagingSenderId": "616616000981",
+  "appId": "1:616616000981:web:6b42fa011801520711915c"
+}</textarea>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="saveAndApplyFirebaseConfig()" class="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold text-xs text-white transition shadow-lg shadow-indigo-600/30">
+          <i class="fa-solid fa-check mr-1"></i> 儲存並連線 Firebase
+        </button>
+        <button onclick="closeModal('firebase-config-modal')" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition">
+          關閉
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 規則說明專用 Modal -->
+  <div id="rules-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-700 rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+          <i class="fa-regular fa-lightbulb text-amber-400"></i> 1A2B 遊戲規則
+        </h3>
+        <button onclick="closeModal('rules-modal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <div class="text-xs sm:text-sm text-slate-300 space-y-3 leading-relaxed">
+        <p>每一局遊戲會設定一組 <span class="text-indigo-400 font-bold">數字不重複</span> 的秘密數字（如 4 位數）。每次猜測後系統會反饋幾 A 幾 B：</p>
+        <div class="bg-slate-800/80 p-3 rounded-xl space-y-2 border border-slate-700">
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-md bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center font-digital">A</span>
+            <span>數字正確且<strong class="text-emerald-400">位置完全正確</strong></span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-md bg-amber-500/20 text-amber-400 font-bold flex items-center justify-center font-digital">B</span>
+            <span>數字正確但<strong class="text-amber-400">位置不正確</strong></span>
+          </div>
+        </div>
+        <p class="text-slate-400 text-xs">
+          例：若答案為 <span class="font-digital text-white font-bold">5281</span>，你猜 <span class="font-digital text-white font-bold">5820</span>，結果為 <span class="text-emerald-400 font-bold">1A</span> <span class="text-amber-400 font-bold">2B</span>。
+        </p>
+      </div>
+      <button onclick="closeModal('rules-modal')" class="mt-5 w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition">
+        瞭解了，開始遊玩
+      </button>
+    </div>
+  </div>
+
+  <!-- 通用勝利與結果對話框 -->
+  <div id="custom-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div id="modal-card" class="bg-slate-900 border border-slate-700/80 rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
+      <div id="modal-content"></div>
+    </div>
+  </div>
+
+  <script>
+    /* 音效系統 (Tone.js 封裝) */
+    let soundEnabled = true;
+    let synth = null;
+
+    function initAudio() {
+      if (!synth && window.Tone) {
+        try {
+          synth = new Tone.PolySynth(Tone.Synth, {
+            oscillator: { type: "triangle" },
+            envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.2 }
+          }).toDestination();
+          synth.volume.value = -8;
+        } catch (e) {
+          console.warn("Audio warning:", e);
+        }
+      }
+    }
+
+    function playSound(type) {
+      if (!soundEnabled) return;
+      try {
+        if (window.Tone && Tone.context.state !== 'running') {
+          Tone.start();
+        }
+        initAudio();
+        if (!synth) return;
+        const now = Tone.now();
+        if (type === 'click') {
+          synth.triggerAttackRelease("C5", "32n", now);
+        } else if (type === 'delete') {
+          synth.triggerAttackRelease("G3", "32n", now);
+        } else if (type === 'error') {
+          synth.triggerAttackRelease(["C3", "F#2"], "16n", now);
+        } else if (type === 'clue') {
+          synth.triggerAttackRelease(["D4", "A4"], "16n", now);
+        } else if (type === 'win') {
+          synth.triggerAttackRelease(["C4", "E4", "G4", "C5"], "8n", now);
+          setTimeout(() => {
+            if (synth) synth.triggerAttackRelease(["E4", "G4", "C5", "E5"], "4n");
+          }, 200);
+        }
+      } catch (err) {}
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const btn = document.getElementById('sound-btn');
+      if (soundEnabled) {
+        btn.innerHTML = '<i class="fa-solid fa-volume-high text-sm"></i>';
+        btn.classList.remove('text-rose-400');
+        showToast("音效已開啟", "info");
+        playSound('click');
+      } else {
+        btn.innerHTML = '<i class="fa-solid fa-volume-xmark text-sm"></i>';
+        btn.classList.add('text-rose-400');
+        showToast("音效已靜音", "info");
+      }
+    }
+
+    /* 全域遊戲參數 */
+    let digitCount = 4; // 2, 3, 4
+    let currentMode = 'solo'; // 'solo', 'duel', 'multi'
+
+    /* 單人模式變數 */
+    let soloSecret = "";
+    let soloGuess = "";
+    let soloHistory = [];
+    let soloTimerInterval = null;
+    let soloSeconds = 0;
+    let soloGameOver = false;
+    let soloGameStarted = false;
+    let scratchpad = Array(10).fill(0); // 0: normal, 1: confirmed, 2: excluded
+
+    // 產生指定位數之不重複隨機數字
+    function generateUniqueNumber(length) {
+      const digits = ['0','1','2','3','4','5','6','7','8','9'];
+      for (let i = digits.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [digits[i], digits[j]] = [digits[j], digits[i]];
+      }
+      return digits.slice(0, length).join('');
+    }
+
+    // 計算幾 A 幾 B
+    function calculateAB(secret, guess) {
+      let a = 0;
+      let b = 0;
+      if (!secret || !guess) return { a: 0, b: 0 };
+      for (let i = 0; i < guess.length; i++) {
+        if (guess[i] === secret[i]) {
+          a++;
+        } else if (secret.includes(guess[i])) {
+          b++;
+        }
+      }
+      return { a, b };
+    }
+
+    function showToast(message, type = "info") {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      const colors = {
+        info: 'bg-slate-800 border-cyan-500/50 text-cyan-300',
+        error: 'bg-rose-950/90 border-rose-500 text-rose-200',
+        success: 'bg-emerald-950/90 border-emerald-500 text-emerald-200'
+      };
+      toast.className = `px-4 py-2.5 rounded-xl border text-xs sm:text-sm font-semibold shadow-2xl transition-all duration-300 opacity-0 translate-y-2 pointer-events-auto flex items-center gap-2 ${colors[type] || colors.info}`;
+      let icon = type === 'error' ? 'fa-circle-exclamation' : (type === 'success' ? 'fa-circle-check' : 'fa-info-circle');
+      toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('opacity-0', 'translate-y-2');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 2600);
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    function setDigitCount(count) {
+      if (digitCount === count) return;
+      digitCount = count;
+      playSound('click');
+
+      [2, 3, 4].forEach(n => {
+        const btn = document.getElementById(`digit-btn-${n}`);
+        if (n === count) {
+          btn.className = "digit-tab px-2.5 py-1 text-xs rounded-lg font-bold transition bg-indigo-600 text-white shadow";
+        } else {
+          btn.className = "digit-tab px-2.5 py-1 text-xs rounded-lg font-bold transition text-slate-400 hover:text-white";
+        }
+      });
+
+      document.querySelectorAll('.current-digit-label').forEach(el => el.textContent = count);
+
+      if (currentMode === 'solo') {
+        soloGameStarted = false;
+        document.getElementById('solo-start-overlay').classList.remove('hidden');
+        renderSoloSlots();
+      }
+      showToast(`已切換為 ${count} 位數模式`, 'info');
+    }
+
+    function switchMode(mode) {
+      if (currentMode === mode) return;
+      currentMode = mode;
+      playSound('click');
+
+      ['solo', 'duel', 'multi'].forEach(m => {
+        const btn = document.getElementById(`mode-btn-${m}`);
+        const view = document.getElementById(`view-${m}`);
+        if (m === mode) {
+          btn.className = "mode-btn py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition bg-indigo-600 text-white shadow-md";
+          view.classList.remove('hidden');
+          view.classList.add('flex');
+        } else {
+          btn.className = "mode-btn py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition text-slate-400 hover:text-white";
+          view.classList.add('hidden');
+          view.classList.remove('flex');
+        }
+      });
+    }
+
+    /* ==========================================
+       個人模式 (Solo Mode) 核心邏輯
+       ========================================== */
+    function startSoloGame() {
+      soloSecret = generateUniqueNumber(digitCount);
+      soloGuess = "";
+      soloHistory = [];
+      soloGameOver = false;
+      soloGameStarted = true;
+      soloSeconds = 0;
+
+      // 隱藏未開始遮罩
+      document.getElementById('solo-start-overlay').classList.add('hidden');
+
+      // 啟動計時器
+      clearInterval(soloTimerInterval);
+      soloTimerInterval = setInterval(() => {
+        soloSeconds++;
+        const mins = String(Math.floor(soloSeconds / 60)).padStart(2, '0');
+        const secs = String(soloSeconds % 60).padStart(2, '0');
+        document.getElementById('solo-timer').textContent = `${mins}:${secs}`;
+      }, 1000);
+
+      document.getElementById('solo-timer').textContent = "00:00";
+      document.getElementById('solo-attempts').textContent = "0 步";
+      document.getElementById('solo-history-count').textContent = "0";
+
+      resetScratchpad();
+      renderSoloSlots();
+      renderSoloHistory();
+      playSound('click');
+      showToast(`新局已開始！請猜測 ${digitCount} 位數`, 'success');
+    }
+
+    function renderSoloSlots() {
+      const container = document.getElementById('solo-display-slots');
+      container.innerHTML = '';
+      for (let i = 0; i < digitCount; i++) {
+        const char = soloGuess[i] || '';
+        const slot = document.createElement('div');
+        slot.className = `w-12 h-14 sm:w-14 sm:h-16 rounded-2xl flex items-center justify-center text-2xl font-digital font-bold border-2 transition-all ${
+          char 
+            ? 'border-indigo-500 bg-indigo-950/40 text-indigo-200 shadow-lg shadow-indigo-500/20' 
+            : 'border-slate-700 bg-slate-800/40 text-slate-500'
+        }`;
+        slot.textContent = char;
+        container.appendChild(slot);
+      }
+    }
+
+    function keypadPress(num) {
+      if (!soloGameStarted) {
+        startSoloGame();
+      }
+      if (soloGameOver) return;
+      if (soloGuess.length >= digitCount) return;
+      if (soloGuess.includes(num)) {
+        playSound('error');
+        shakeElement('solo-display-slots');
+        showToast(`數字 ${num} 已輸入，不可重複！`, 'error');
+        return;
+      }
+      playSound('click');
+      soloGuess += num;
+      renderSoloSlots();
+    }
+
+    function keypadBackspace() {
+      if (soloGameOver || soloGuess.length === 0) return;
+      playSound('delete');
+      soloGuess = soloGuess.slice(0, -1);
+      renderSoloSlots();
+    }
+
+    function shakeElement(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.remove('shake-animation');
+      void el.offsetWidth;
+      el.classList.add('shake-animation');
+    }
+
+    function submitGuess() {
+      if (!soloGameStarted) {
+        showToast("請先點擊「開始遊戲」！", "error");
+        return;
+      }
+      if (soloGameOver) return;
+      if (soloGuess.length !== digitCount) {
+        playSound('error');
+        shakeElement('solo-display-slots');
+        showToast(`請輸入滿 ${digitCount} 位數字！`, 'error');
+        return;
+      }
+
+      const res = calculateAB(soloSecret, soloGuess);
+      soloHistory.unshift({ guess: soloGuess, a: res.a, b: res.b });
+      document.getElementById('solo-attempts').textContent = `${soloHistory.length} 步`;
+      document.getElementById('solo-history-count').textContent = soloHistory.length;
+
+      renderSoloHistory();
+
+      if (res.a === digitCount) {
+        soloGameOver = true;
+        clearInterval(soloTimerInterval);
+        playSound('win');
+        triggerConfetti();
+        showWinModal({
+          title: "🎉 破譯成功！太厲害了！",
+          msg: `你在 ${soloHistory.length} 次猜測內，耗時 ${document.getElementById('solo-timer').textContent} 成功解開答案！`,
+          answer: soloSecret,
+          onRestart: startSoloGame
+        });
+      } else {
+        playSound('clue');
+      }
+
+      soloGuess = "";
+      renderSoloSlots();
+    }
+
+    function renderSoloHistory() {
+      const list = document.getElementById('solo-history-list');
+      if (soloHistory.length === 0) {
+        list.innerHTML = `<div class="text-center py-12 text-slate-500 text-xs">尚未輸入任何猜測，開始挑戰吧！</div>`;
+        return;
+      }
+      list.innerHTML = soloHistory.map((item, index) => {
+        const roundNum = soloHistory.length - index;
+        return `
+          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 hover:border-slate-600 transition">
+            <div class="flex items-center gap-3">
+              <span class="text-xs font-bold text-slate-500 w-6 text-center font-digital">#${roundNum}</span>
+              <span class="font-digital text-base font-bold tracking-widest text-white">${item.guess}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-400 font-digital font-bold text-xs border border-emerald-500/30">
+                ${item.a}A
+              </span>
+              <span class="px-2 py-0.5 rounded-lg bg-amber-500/20 text-amber-400 font-digital font-bold text-xs border border-amber-500/30">
+                ${item.b}B
+              </span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function giveUpSolo() {
+      if (!soloGameStarted || !soloSecret) {
+        showToast("遊戲尚未開始", "info");
+        return;
+      }
+      soloGameOver = true;
+      clearInterval(soloTimerInterval);
+      playSound('error');
+      showWinModal({
+        title: "🏳️ 本局已放棄",
+        msg: `正確的秘密數字解答是：`,
+        answer: soloSecret,
+        onRestart: startSoloGame
+      });
+    }
+
+    /* 推理筆記盤 */
+    function initScratchpad() {
+      const container = document.getElementById('scratchpad-container');
+      container.innerHTML = '';
+      for (let i = 0; i <= 9; i++) {
+        const btn = document.createElement('button');
+        btn.id = `scratch-${i}`;
+        btn.onclick = () => cycleScratchpad(i);
+        btn.className = "py-2 rounded-xl border text-sm font-digital font-bold transition flex items-center justify-center relative";
+        updateScratchpadBtn(btn, 0, i);
+        container.appendChild(btn);
+      }
+    }
+
+    function cycleScratchpad(num) {
+      playSound('click');
+      scratchpad[num] = (scratchpad[num] + 1) % 3;
+      const btn = document.getElementById(`scratch-${num}`);
+      updateScratchpadBtn(btn, scratchpad[num], num);
+    }
+
+    function updateScratchpadBtn(btn, state, num) {
+      if (state === 0) {
+        btn.className = "py-1.5 sm:py-2 rounded-xl border border-slate-700 bg-slate-800 text-slate-300 font-digital font-bold hover:bg-slate-700 transition";
+        btn.innerHTML = `${num}`;
+      } else if (state === 1) {
+        btn.className = "py-1.5 sm:py-2 rounded-xl border border-emerald-500 bg-emerald-950/60 text-emerald-300 font-digital font-bold shadow-md shadow-emerald-500/20";
+        btn.innerHTML = `${num} <span class="absolute top-0.5 right-1 text-[9px] text-emerald-400">✓</span>`;
+      } else if (state === 2) {
+        btn.className = "py-1.5 sm:py-2 rounded-xl border border-rose-800 bg-rose-950/40 text-rose-500 line-through opacity-50 font-digital font-bold";
+        btn.innerHTML = `${num}`;
+      }
+    }
+
+    function resetScratchpad() {
+      scratchpad = Array(10).fill(0);
+      for (let i = 0; i <= 9; i++) {
+        const btn = document.getElementById(`scratch-${i}`);
+        if (btn) updateScratchpadBtn(btn, 0, i);
+      }
+    }
+
+    // 鍵盤輸入事件綁定
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      if (e.key >= '0' && e.key <= '9') {
+        if (currentMode === 'solo') keypadPress(e.key);
+        else if (currentMode === 'duel') {
+          if (!document.getElementById('duel-setup-stage').classList.contains('hidden')) duelSetupPress(e.key);
+          else if (!document.getElementById('duel-battle-stage').classList.contains('hidden')) duelGuessPress(e.key);
+        } else if (currentMode === 'multi') {
+          multiKeypadPress(e.key);
+        }
+      } else if (e.key === 'Backspace') {
+        if (currentMode === 'solo') keypadBackspace();
+        else if (currentMode === 'duel') {
+          if (!document.getElementById('duel-setup-stage').classList.contains('hidden')) duelSetupBack();
+          else if (!document.getElementById('duel-battle-stage').classList.contains('hidden')) duelGuessBack();
+        } else if (currentMode === 'multi') {
+          multiKeypadBack();
+        }
+      } else if (e.key === 'Enter') {
+        if (currentMode === 'solo') submitGuess();
+        else if (currentMode === 'duel') {
+          if (!document.getElementById('duel-setup-stage').classList.contains('hidden')) submitDuelSecretFirebase();
+          else if (!document.getElementById('duel-battle-stage').classList.contains('hidden')) submitDuelGuessFirebase();
+        } else if (currentMode === 'multi') {
+          submitMultiGuessFirebase();
+        }
+      }
+    });
+
+    function showWinModal({ title, msg, answer, onRestart }) {
+      const modal = document.getElementById('custom-modal');
+      const content = document.getElementById('modal-content');
+      content.innerHTML = `
+        <div class="text-center">
+          <div class="w-16 h-16 mx-auto rounded-3xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-3xl mb-4 shadow-lg shadow-emerald-500/20">
+            <i class="fa-solid fa-trophy"></i>
+          </div>
+          <h3 class="text-xl font-black text-white mb-2">${title}</h3>
+          <p class="text-xs text-slate-300 mb-4 whitespace-pre-line leading-relaxed">${msg}</p>
+          <div class="bg-slate-800/80 rounded-2xl p-3 border border-slate-700 mb-5 inline-block px-6">
+            <span class="text-xs text-slate-400 block mb-1">答案密碼：</span>
+            <span class="text-2xl font-digital font-bold text-amber-400 tracking-widest">${answer}</span>
+          </div>
+          <div class="flex gap-2">
+            <button id="modal-restart-btn" class="flex-1 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 font-bold text-white text-xs shadow-lg transition">
+              <i class="fa-solid fa-arrow-rotate-right mr-1"></i> 再玩一局
+            </button>
+            <button onclick="closeModal('custom-modal')" class="py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold">
+              關閉
+            </button>
+          </div>
+        </div>
+      `;
+      document.getElementById('modal-restart-btn').onclick = () => {
+        closeModal('custom-modal');
+        if (onRestart) onRestart();
+      };
+      modal.classList.remove('hidden');
+    }
+
+    function triggerConfetti() {
+      if (typeof confetti === 'function') {
+        confetti({
+          particleCount: 80,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+      }
+    }
+
+    // 初始化草稿盤與槽位
+    initScratchpad();
+    renderSoloSlots();
+  </script>
+
+  <!-- ==========================================================================
+       Firebase 模組初始化與跨平板即時同步邏輯 (符合 GitHub Pages 與嚴格 Firestore 規範)
+       ========================================================================== -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // 取得環境預設 AppId 與 Firebase 配置
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'guess-1a2b-game';
+    let app = null;
+    let auth = null;
+    let db = null;
+    let currentUserId = null;
+
+    // 預設寫入您的 Firebase 配置 (guess-1a2b-game)
+    const defaultFirebaseConfig = {
+      apiKey: "AIzaSyBvYIp7BJlm50dh_sq8v233FGB2x0U2kUk",
+      authDomain: "guess-1a2b-game.firebaseapp.com",
+      projectId: "guess-1a2b-game",
+      storageBucket: "guess-1a2b-game.firebasestorage.app",
+      messagingSenderId: "616616000981",
+      appId: "1:616616000981:web:6b42fa011801520711915c"
+    };
+
+    // 支援環境預注入或是手動輸入之 Firebase 設定 (優先使用您的專案配置)
+    let activeFirebaseConfig = defaultFirebaseConfig;
+    if (typeof __firebase_config !== 'undefined') {
+      try {
+        activeFirebaseConfig = JSON.parse(__firebase_config);
+      } catch (e) {
+        console.warn("Failed to parse __firebase_config, fallback to default", e);
+      }
+    }
+
+    async function initFirebaseService(config) {
+      if (!config || !config.apiKey || !config.projectId) {
+        updateFirebaseStatusUI(false, "尚未設定 Firebase");
+        return false;
+      }
+      try {
+        app = initializeApp(config);
+        auth = getAuth(app);
+        db = getFirestore(app);
+
+        // 規則 3：認證優先，先完成驗證才進行後續查詢
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          const cred = await signInWithCustomToken(auth, __initial_auth_token);
+          currentUserId = cred.user.uid;
+        } else {
+          const cred = await signInAnonymously(auth);
+          currentUserId = cred.user.uid;
+        }
+
+        updateFirebaseStatusUI(true, "Firebase 已連線");
+        showToast("Firebase 雲端已成功連線！", "success");
+        return true;
+      } catch (err) {
+        console.error("Firebase init failed:", err);
+        updateFirebaseStatusUI(false, "連線失敗，請檢查設定");
+        showToast("Firebase 連線失敗，請確認 Config 設定", "error");
+        return false;
+      }
+    }
+
+    function updateFirebaseStatusUI(connected, text) {
+      const dot = document.getElementById('firebase-status-dot');
+      const label = document.getElementById('firebase-status-text');
+      if (!dot || !label) return;
+      if (connected) {
+        dot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
+        label.textContent = text || "Firebase 已連線";
+      } else {
+        dot.className = "w-2 h-2 rounded-full bg-amber-400";
+        label.textContent = text || "未設定 Firebase";
+      }
+    }
+
+    // 提供儲存與應用自訂 Firebase Config (在記憶體中生效，方便 GitHub Pages 跨平板使用)
+    window.saveAndApplyFirebaseConfig = async function() {
+      const raw = document.getElementById('firebase-config-input').value.trim();
+      if (!raw) {
+        showToast("請輸入有效的 Firebase Config JSON", "error");
+        return;
+      }
+      try {
+        let clean = raw;
+        if (clean.startsWith('{') && clean.endsWith('}')) {
+          activeFirebaseConfig = JSON.parse(clean);
+        } else {
+          // 支援物件屬性格式處理
+          const jsonLike = clean.replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2": ').replace(/'/g, '"');
+          activeFirebaseConfig = JSON.parse(jsonLike);
+        }
+        closeModal('firebase-config-modal');
+        await initFirebaseService(activeFirebaseConfig);
+      } catch (e) {
+        showToast("JSON 格式解析錯誤，請確認內容！", "error");
+      }
+    };
+
+    // 啟動嘗試連線
+    if (activeFirebaseConfig) {
+      initFirebaseService(activeFirebaseConfig);
+    } else {
+      updateFirebaseStatusUI(false, "點此設定 Firebase");
+    }
+
+    /* ==========================================================================
+       雙人對抗 (Duel Mode) - Firebase Firestore 跨平板即時同步
+       嚴格路徑規則：/artifacts/{appId}/public/data/rooms/{roomId}
+       ========================================================================== */
+    let duelUnsubscribe = null;
+    let duelRoomId = "";
+    let duelMyRole = ""; // 'p1' 或 'p2'
+    let duelMySecret = "";
+    let duelCurrentGuess = "";
+    let duelGameOver = false;
+
+    function generateRoomCode() {
+      // 產生 4 位純數字房間邀請碼 (1000 ~ 9999)，方便平板使用者純數字鍵盤直覺輸入
+      return Math.floor(1000 + Math.random() * 9000).toString();
+    }
+
+    // 建立 1v1 房間 (平板 A)
+    window.createDuelFirebaseRoom = async function() {
+      if (!db || !auth.currentUser) {
+        openModal('firebase-config-modal');
+        showToast("請先設定 Firebase 才能跨平板連線！", "error");
+        return;
+      }
+
+      const pName = document.getElementById('duel-player-name-input').value.trim() || '特工 1';
+      const code = generateRoomCode();
+      duelRoomId = code;
+      duelMyRole = 'p1';
+      duelMySecret = "";
+
+      const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', code);
+      const roomData = {
+        roomId: code,
+        type: 'duel',
+        digitCount: Number(digitCount),
+        status: 'waiting', // waiting -> setup -> playing -> ended
+        turn: 'p1', // 'p1' or 'p2'
+        round: 1,
+        p1: {
+          id: auth.currentUser.uid,
+          name: pName,
+          secret: "",
+          ready: false,
+          history: []
+        },
+        p2: null,
+        winner: null,
+        createdAt: Date.now()
+      };
+
+      try {
+        await setDoc(roomRef, roomData);
+        showToast("對抗房間已建立！", "success");
+        playSound('click');
+
+        document.getElementById('duel-lobby-card').classList.add('hidden');
+        document.getElementById('duel-waiting-card').classList.remove('hidden');
+        document.getElementById('duel-waiting-room-code').textContent = code;
+
+        listenToDuelRoom(code);
+      } catch (e) {
+        console.error("Create duel room error:", e);
+        showToast("建立房間失敗，請確認 Firebase 規則與連線！", "error");
+      }
+    };
+
+    // 加入 1v1 房間 (平板 B)
+    window.joinDuelFirebaseRoom = async function() {
+      if (!db || !auth.currentUser) {
+        openModal('firebase-config-modal');
+        showToast("請先設定 Firebase 才能跨平板連線！", "error");
+        return;
+      }
+
+      const code = document.getElementById('duel-join-code-input').value.trim();
+      if (!/^\d{4}$/.test(code)) {
+        showToast("請輸入 4 位數字房間代碼！", "error");
+        return;
+      }
+
+      const pName = document.getElementById('duel-player-name-input').value.trim() || '特工 2';
+      const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', code);
+
+      try {
+        const snap = await getDoc(roomRef);
+        if (!snap.exists()) {
+          showToast("找不到此房間，請確認代碼！", "error");
+          return;
+        }
+
+        const data = snap.data();
+        if (data.p2 && data.p2.id !== auth.currentUser.uid) {
+          showToast("該房間已滿（已有對手）！", "error");
+          return;
+        }
+
+        duelRoomId = code;
+        duelMyRole = 'p2';
+        duelMySecret = "";
+
+        // 更新房間，寫入 P2 資訊，並切換狀態至 setup
+        await updateDoc(roomRef, {
+          p2: {
+            id: auth.currentUser.uid,
+            name: pName,
+            secret: "",
+            ready: false,
+            history: []
+          },
+          status: 'setup'
+        });
+
+        showToast("已成功加入對決！", "success");
+        playSound('click');
+        listenToDuelRoom(code);
+      } catch (e) {
+        console.error("Join duel room error:", e);
+        showToast("加入房間失敗，請重試！", "error");
+      }
+    };
+
+    // 監聽 1v1 房間狀態 (雙平板雙向零時差同步)
+    function listenToDuelRoom(code) {
+      if (duelUnsubscribe) duelUnsubscribe();
+
+      const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', code);
+      duelUnsubscribe = onSnapshot(roomRef, (docSnap) => {
+        if (!docSnap.exists()) {
+          showToast("房間已被解散！", "info");
+          leaveDuelRoom(false);
+          return;
+        }
+        const data = docSnap.data();
+        handleDuelRoomUpdate(data);
+      }, (err) => {
+        console.error("Duel room sync error:", err);
+        showToast("雲端同步中斷，請確認網路！", "error");
+      });
+    }
+
+    function handleDuelRoomUpdate(data) {
+      digitCount = data.digitCount || digitCount;
+      document.querySelectorAll('.current-digit-label').forEach(el => el.textContent = digitCount);
+
+      if (data.status === 'setup') {
+        // 進入秘密出題階段
+        document.getElementById('duel-lobby-card').classList.add('hidden');
+        document.getElementById('duel-waiting-card').classList.add('hidden');
+        document.getElementById('duel-setup-stage').classList.remove('hidden');
+        renderDuelSetupSlots();
+      } else if (data.status === 'playing') {
+        // 進入對戰進行階段
+        document.getElementById('duel-setup-stage').classList.add('hidden');
+        document.getElementById('duel-battle-stage').classList.remove('hidden');
+        document.getElementById('duel-battle-stage').classList.add('flex');
+        renderDuelBattleView(data);
+      } else if (data.status === 'ended') {
+        renderDuelBattleView(data);
+        if (!duelGameOver && data.winner) {
+          handleDuelEnd(data);
+        }
+      }
+    }
+
+    // 雙人出題小鍵盤邏輯
+    window.duelSetupPress = function(num) {
+      if (duelMySecret.length >= digitCount) return;
+      if (duelMySecret.includes(num)) {
+        playSound('error');
+        showToast(`數字 ${num} 不可重複！`, 'error');
+        return;
+      }
+      playSound('click');
+      duelMySecret += num;
+      renderDuelSetupSlots();
+    };
+
+    window.duelSetupBack = function() {
+      if (duelMySecret.length === 0) return;
+      playSound('delete');
+      duelMySecret = duelMySecret.slice(0, -1);
+      renderDuelSetupSlots();
+    };
+
+    window.duelSetupRandom = function() {
+      playSound('click');
+      duelMySecret = generateUniqueNumber(digitCount);
+      renderDuelSetupSlots();
+      showToast("已隨機生成密碼！", "success");
+    };
+
+    function renderDuelSetupSlots() {
+      const container = document.getElementById('duel-setup-slots');
+      if (!container) return;
+      container.innerHTML = '';
+      for (let i = 0; i < digitCount; i++) {
+        const char = duelMySecret[i] || '';
+        const slot = document.createElement('div');
+        slot.className = `w-12 h-14 rounded-2xl flex items-center justify-center text-2xl font-digital font-bold border-2 ${
+          char ? 'border-indigo-500 bg-indigo-950/40 text-white' : 'border-slate-700 bg-slate-800 text-slate-500'
+        }`;
+        slot.textContent = char ? '●' : '';
+        container.appendChild(slot);
+      }
+    }
+
+    // 送出雙人各自秘密出題
+    window.submitDuelSecretFirebase = async function() {
+      if (!db || !auth.currentUser || !duelRoomId) return;
+      if (duelMySecret.length !== digitCount) {
+        playSound('error');
+        showToast(`請設定滿 ${digitCount} 位數！`, 'error');
+        return;
+      }
+
+      playSound('click');
+      document.getElementById('duel-setup-submit').classList.add('hidden');
+      document.getElementById('duel-waiting-peer-notice').classList.remove('hidden');
+
+      const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', duelRoomId);
+      try {
+        const snap = await getDoc(roomRef);
+        if (!snap.exists()) return;
+        const data = snap.data();
+
+        const updatePayload = {};
+        if (duelMyRole === 'p1') {
+          updatePayload['p1.secret'] = duelMySecret;
+          updatePayload['p1.ready'] = true;
+          // 若對手也準備好了，自動轉為 playing
+          if (data.p2 && data.p2.ready) {
+            updatePayload.status = 'playing';
+          }
+        } else {
+          updatePayload['p2.secret'] = duelMySecret;
+          updatePayload['p2.ready'] = true;
+          if (data.p1 && data.p1.ready) {
+            updatePayload.status = 'playing';
+          }
+        }
+
+        await updateDoc(roomRef, updatePayload);
+      } catch (e) {
+        console.error("Submit secret error:", e);
+        showToast("出題密碼鎖定失敗，請重試！", "error");
+      }
+    };
+
+    // 渲染雙人對戰看板
+    function renderDuelBattleView(data) {
+      document.getElementById('duel-room-tag').textContent = data.roomId || '1V1';
+      document.getElementById('duel-round-label').textContent = `Round ${data.round || 1}`;
+
+      const isMyTurn = (data.turn === duelMyRole);
+      const myName = duelMyRole === 'p1' ? data.p1?.name : data.p2?.name;
+      const opponentName = duelMyRole === 'p1' ? data.p2?.name : data.p1?.name;
+
+      document.getElementById('duel-p1-name-tag').innerHTML = `<i class="fa-solid fa-user-ninja"></i> ${data.p1?.name || '玩家 1'} ${duelMyRole === 'p1' ? '(我)' : ''}`;
+      document.getElementById('duel-p2-name-tag').innerHTML = `<i class="fa-solid fa-user-astronaut"></i> ${data.p2?.name || '玩家 2'} ${duelMyRole === 'p2' ? '(我)' : ''}`;
+
+      const banner = document.getElementById('duel-turn-banner');
+      const hint = document.getElementById('duel-current-guesser-hint');
+      const currentGuesserName = data.turn === 'p1' ? data.p1?.name : data.p2?.name;
+
+      if (isMyTurn) {
+        banner.innerHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-gamepad mr-1"></i> 輪到你猜測！</span>`;
+        hint.innerHTML = `請輸入你對 <strong class="text-amber-400">${opponentName || '對手'}</strong> 密碼的猜測：`;
+      } else {
+        banner.innerHTML = `<span class="text-pink-400 font-bold"><i class="fa-solid fa-hourglass-half mr-1"></i> 輪到 ${currentGuesserName} 猜測</span>`;
+        hint.innerHTML = `等待對手猜測中...`;
+      }
+
+      const lockOverlay = document.getElementById('duel-turn-lock');
+      const lockMsg = document.getElementById('duel-turn-lock-msg');
+      if (isMyTurn) {
+        lockOverlay.classList.add('hidden');
+      } else {
+        lockOverlay.classList.remove('hidden');
+        lockMsg.innerHTML = `對手 <strong class="text-pink-400">${currentGuesserName}</strong> 思考猜測中，請稍候...`;
+      }
+
+      renderDuelGuessSlots();
+      renderDuelHistories(data);
+    }
+
+    function renderDuelGuessSlots() {
+      const container = document.getElementById('duel-input-slots');
+      if (!container) return;
+      container.innerHTML = '';
+      for (let i = 0; i < digitCount; i++) {
+        const char = duelCurrentGuess[i] || '';
+        const slot = document.createElement('div');
+        slot.className = `w-12 h-14 rounded-2xl flex items-center justify-center text-2xl font-digital font-bold border-2 ${
+          char ? 'border-indigo-500 bg-indigo-950/40 text-indigo-200' : 'border-slate-700 bg-slate-800 text-slate-500'
+        }`;
+        slot.textContent = char;
+        container.appendChild(slot);
+      }
+    }
+
+    window.duelGuessPress = function(num) {
+      if (duelGameOver || duelCurrentGuess.length >= digitCount) return;
+      if (duelCurrentGuess.includes(num)) {
+        playSound('error');
+        showToast(`數字 ${num} 不可重複！`, 'error');
+        return;
+      }
+      playSound('click');
+      duelCurrentGuess += num;
+      renderDuelGuessSlots();
+    };
+
+    window.duelGuessBack = function() {
+      if (duelGameOver || duelCurrentGuess.length === 0) return;
+      playSound('delete');
+      duelCurrentGuess = duelCurrentGuess.slice(0, -1);
+      renderDuelGuessSlots();
+    };
+
+    // 送出雙人猜測至 Firebase
+    window.submitDuelGuessFirebase = async function() {
+      if (!db || !auth.currentUser || !duelRoomId || duelGameOver) return;
+      const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', duelRoomId);
+
+      try {
+        const snap = await getDoc(roomRef);
+        if (!snap.exists()) return;
+        const data = snap.data();
+
+        if (data.turn !== duelMyRole) {
+          showToast("尚未輪到你的回合！", "error");
+          return;
+        }
+
+        if (duelCurrentGuess.length !== digitCount) {
+          playSound('error');
+          showToast(`請輸入滿 ${digitCount} 位數字！`, 'error');
+          return;
+        }
+
+        // 對手的秘密數字為判定目標
+        const targetSecret = duelMyRole === 'p1' ? data.p2?.secret : data.p1?.secret;
+        const res = calculateAB(targetSecret, duelCurrentGuess);
+        const isWin = (res.a === digitCount);
+        const historyItem = { guess: duelCurrentGuess, a: res.a, b: res.b, timestamp: Date.now() };
+
+        const updatePayload = {};
+        if (duelMyRole === 'p1') {
+          const list = [historyItem, ...(data.p1?.history || [])];
+          updatePayload['p1.history'] = list;
+          updatePayload.turn = 'p2';
+        } else {
+          const list = [historyItem, ...(data.p2?.history || [])];
+          updatePayload['p2.history'] = list;
+          updatePayload.turn = 'p1';
+          updatePayload.round = (data.round || 1) + 1;
+        }
+
+        if (isWin) {
+          updatePayload.status = 'ended';
+          updatePayload.winner = duelMyRole;
+        }
+
+        duelCurrentGuess = "";
+        renderDuelGuessSlots();
+        await updateDoc(roomRef, updatePayload);
+
+        if (!isWin) playSound('clue');
+      } catch (e) {
+        console.error("Submit duel guess error:", e);
+        showToast("送出猜測失敗，請確認連線！", "error");
+      }
+    };
+
+    function renderDuelHistories(data) {
+      const render = (arr, id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (!arr || arr.length === 0) {
+          el.innerHTML = `<div class="text-slate-500 text-xs text-center py-8">尚無猜測記錄</div>`;
+          return;
+        }
+        el.innerHTML = arr.map(item => `
+          <div class="flex items-center justify-between p-2 rounded-xl bg-slate-800/60 border border-slate-700/60 text-xs">
+            <span class="font-digital font-bold text-slate-100 tracking-wider">${item.guess}</span>
+            <div class="flex gap-1.5 font-digital font-bold">
+              <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">${item.a}A</span>
+              <span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">${item.b}B</span>
+            </div>
+          </div>
+        `).join('');
+      };
+      render(data.p1?.history, 'duel-p1-history');
+      render(data.p2?.history, 'duel-p2-history');
+    }
+
+    function handleDuelEnd(data) {
+      duelGameOver = true;
+      playSound('win');
+      triggerConfetti();
+
+      const isWinner = (data.winner === duelMyRole);
+      const winnerName = data.winner === 'p1' ? data.p1?.name : data.p2?.name;
+
+      showWinModal({
+        title: isWinner ? "🏆 榮耀獲勝！你率先破解了對手的密碼！" : `🏳️ 對手 ${winnerName} 率先破解獲勝！`,
+        msg: `精彩結算揭曉：\n玩家 1 (${data.p1?.name}) 密碼為 ${data.p1?.secret}\n玩家 2 (${data.p2?.name}) 密碼為 ${data.p2?.secret}`,
+        answer: isWinner ? (duelMyRole === 'p1' ? data.p2?.secret : data.p1?.secret) : duelMySecret,
+        onRestart: () => leaveDuelRoom(true)
+      });
+    }
+
+    window.leaveDuelRoom = function(promptUser = true) {
+      if (duelUnsubscribe) {
+        duelUnsubscribe();
+        duelUnsubscribe = null;
+      }
+      duelRoomId = "";
+      duelMyRole = "";
+      duelMySecret = "";
+      duelCurrentGuess = "";
+      duelGameOver = false;
+
+      document.getElementById('duel-lobby-card').classList.remove('hidden');
+      document.getElementById('duel-waiting-card').classList.add('hidden');
+      document.getElementById('duel-setup-stage').classList.add('hidden');
+      document.getElementById('duel-battle-stage').classList.add('hidden');
+      document.getElementById('duel-setup-submit').classList.remove('hidden');
+      document.getElementById('duel-waiting-peer-notice').classList.add('hidden');
+
+      if (promptUser) showToast("已退出雙人對抗房間", "info");
+    };
+
+    /* ==========================================================================
+       多人派對 (Multiplayer Party) - Firebase Firestore 跨平板即時同步 (最多 20 人)
+       嚴格路徑規則：/artifacts/{appId}/public/data/rooms/{roomId}
+       ========================================================================== */
+    let multiUnsubscribe = null;
+    let multiRoomId = "";
+    let isMultiHost = false;
+    let multiCurrentGuess = "";
+    let multiGameOver = false;
+
+    // 建立多人派對房間 (房長)
+    window.createMultiFirebaseRoom = async function() {
+      if (!db || !auth.currentUser) {
+        openModal('firebase-config-modal');
+        showToast("請先設定 Firebase 才能跨平板連線！", "error");
+        return;
+      }
+
+      const pName = document.getElementById('multi-player-name-input').value.trim() || '破譯特工';
+      const subModeEl = document.querySelector('input[name="multi-submode"]:checked');
+      const selectedSubMode = subModeEl ? subModeEl.value : 'turn'; // 'turn' or 'race'
+      const code = generateRoomCode();
+      multiRoomId = code;
+      isMultiHost = true;
+
+      const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', code);
+      const roomData = {
+        roomId: code,
+        type: 'multi',
+        subMode: selectedSubMode, // 'turn' (輪流) 或 'race' (同時競速)
+        digitCount: Number(digitCount),
+        status: 'waiting', // waiting -> playing -> ended
+        turnIndex: 0,
+        hostId: auth.currentUser.uid,
+        secret: generateUniqueNumber(digitCount),
+        players: [{
+          id: auth.currentUser.uid,
+          name: pName,
+          isHost: true,
+          attempts: 0,
+          bestA: 0,
+          bestB: 0,
+          personalHistory: []
+        }],
+        history: [],
+        winner: null,
+        createdAt: Date.now()
+      };
+
+      try {
+        await setDoc(roomRef, roomData);
+        showToast(`多人房間已建立！模式：${selectedSubMode === 'race' ? '⚡ 全員競速搶猜' : '🔄 輪流接力猜'}`, "success");
+        playSound('click');
+
+        listenToMultiRoom(code);
+      } catch (e) {
+        console.error("Create multi room error:", e);
+        showToast("建立多人房間失敗，請重試！", "error");
+      }
+    };
+
+    // 加入多人派對房間 (訪客)
+    window.joinMultiFirebaseRoom = async function() {
+      if (!db || !auth.currentUser) {
+        openModal('firebase-config-modal');
+        showToast("請先設定 Firebase 才能跨平板連線！", "error");
+        return;
+      }
+
+      const code = document.getElementById('join-room-code-input').value.trim();
+      if (!/^\d{4}$/.test(code)) {
+        showToast("請輸入 4 位數字房間代碼！", "error");
+        return;
+      }
+
+      const pName = document.getElementById('multi-player-name-input').value.trim() || '破譯特工';
+      const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', code);
+
+      try {
+        const snap = await getDoc(roomRef);
+        if (!snap.exists()) {
+          showToast("找不到此房間，請確認代碼！", "error");
+          return;
+        }
+
+        const data = snap.data();
+        const players = data.players || [];
+        if (players.length >= 20) {
+          showToast("房間人數已達上限 (最多 20 人)！", "error");
+          return;
+        }
+        if (data.status !== 'waiting') {
+          showToast("遊戲已在進行中，無法加入！", "error");
+          return;
+        }
+
+        // 避免重複加入
+        if (!players.some(p => p.id === auth.currentUser.uid)) {
+          players.push({
+            id: auth.currentUser.uid,
+            name: pName,
+            isHost: false,
+            attempts: 0,
+            bestA: 0,
+            bestB: 0,
+            personalHistory: []
+          });
+          await updateDoc(roomRef, { players: players });
+        }
+
+        multiRoomId = code;
+        isMultiHost = false;
+        showToast("已成功加入派對！", "success");
+        playSound('click');
+
+        listenToMultiRoom(code);
+      } catch (e) {
+        console.error("Join multi room error:", e);
+        showToast("加入多人房間失敗，請重試！", "error");
+      }
+    };
+
+    function listenToMultiRoom(code) {
+      if (multiUnsubscribe) multiUnsubscribe();
+
+      const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', code);
+      multiUnsubscribe = onSnapshot(roomRef, (docSnap) => {
+        if (!docSnap.exists()) {
+          showToast("派對房間已關閉！", "info");
+          leaveMultiRoom(false);
+          return;
+        }
+        const data = docSnap.data();
+        handleMultiRoomUpdate(data);
+      }, (err) => {
+        console.error("Multi room sync error:", err);
+        showToast("多人連線同步異常，請檢查網路！", "error");
+      });
+    }
+
+    function handleMultiRoomUpdate(data) {
+      digitCount = data.digitCount || digitCount;
+      document.querySelectorAll('.current-digit-label').forEach(el => el.textContent = digitCount);
+
+      if (data.status === 'waiting') {
+        renderMultiWaitingView(data);
+      } else if (data.status === 'playing') {
+        renderMultiPlayingView(data);
+      } else if (data.status === 'ended') {
+        renderMultiPlayingView(data);
+        if (!multiGameOver && data.winner) {
+          handleMultiEnd(data);
+        }
+      }
+    }
+
+    function renderMultiWaitingView(data) {
+      document.getElementById('multi-lobby-card').classList.add('hidden');
+      document.getElementById('multi-waiting-card').classList.remove('hidden');
+      document.getElementById('multi-game-card').classList.add('hidden');
+
+      document.getElementById('waiting-room-code').textContent = data.roomId;
+      document.getElementById('waiting-room-digits').textContent = `${data.digitCount} 位數`;
+      const isRace = (data.subMode === 'race');
+      document.getElementById('waiting-room-submode').innerHTML = isRace 
+        ? `<span class="text-amber-400"><i class="fa-solid fa-bolt mr-1"></i>全員競速搶猜</span>` 
+        : `<span class="text-cyan-300"><i class="fa-solid fa-arrows-rotate mr-1"></i>輪流接力猜</span>`;
+
+      document.getElementById('waiting-player-count').textContent = (data.players || []).length;
+
+      const listContainer = document.getElementById('waiting-players-list');
+      listContainer.innerHTML = (data.players || []).map((p, idx) => {
+        const isMe = (p.id === auth.currentUser.uid);
+        return `
+          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-800 border ${isMe ? 'border-cyan-500/60' : 'border-slate-700'}">
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-lg bg-slate-700 text-xs font-bold flex items-center justify-center font-digital">${idx + 1}</span>
+              <span class="text-sm font-semibold text-white">${p.name}</span>
+              ${isMe ? '<span class="text-[10px] bg-cyan-500/20 text-cyan-300 px-1.5 py-0.5 rounded font-bold">我</span>' : ''}
+              ${p.isHost ? '<span class="text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded font-bold"><i class="fa-solid fa-crown mr-1"></i>房長</span>' : ''}
+            </div>
+            <span class="text-xs text-emerald-400 font-semibold"><i class="fa-solid fa-circle-check mr-1"></i>就緒</span>
+          </div>
+        `;
+      }).join('');
+
+      const hostControls = document.getElementById('waiting-host-controls');
+      const clientNotice = document.getElementById('waiting-client-notice');
+
+      if (data.hostId === auth.currentUser.uid) {
+        hostControls.classList.remove('hidden');
+        clientNotice.classList.add('hidden');
+        const startBtn = document.getElementById('btn-start-game');
+        const count = (data.players || []).length;
+        startBtn.disabled = count < 2;
+        if (count < 2) {
+          startBtn.classList.add('opacity-50', 'cursor-not-allowed');
+          startBtn.innerHTML = `<i class="fa-solid fa-hourglass mr-1"></i> 等待至少 1 位朋友平板加入...`;
+        } else {
+          startBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+          startBtn.innerHTML = `<i class="fa-solid fa-play mr-1.5"></i> 全員到齊，開始破譯大戰 (${count}人)！`;
+        }
+      } else {
+        hostControls.classList.add('hidden');
+        clientNotice.classList.remove('hidden');
+      }
+    }
+
+    // 房長點擊啟動多人遊戲
+    window.startMultiFirebaseGame = async function() {
+      if (!db || !auth.currentUser || !multiRoomId) return;
+      const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', multiRoomId);
+      try {
+        const snap = await getDoc(roomRef);
+        const data = snap.data();
+        const resetPlayers = (data.players || []).map(p => ({
+          ...p,
+          attempts: 0,
+          bestA: 0,
+          bestB: 0,
+          personalHistory: []
+        }));
+
+        await updateDoc(roomRef, {
+          status: 'playing',
+          turnIndex: 0,
+          secret: generateUniqueNumber(digitCount),
+          players: resetPlayers,
+          history: []
+        });
+        playSound('win');
+      } catch (e) {
+        console.error("Start multi game error:", e);
+        showToast("啟動遊戲失敗，請重試！", "error");
+      }
+    };
+
+    function renderMultiPlayingView(data) {
+      document.getElementById('multi-lobby-card').classList.add('hidden');
+      document.getElementById('multi-waiting-card').classList.add('hidden');
+      document.getElementById('multi-game-card').classList.remove('hidden');
+      document.getElementById('multi-game-card').classList.add('flex');
+
+      document.getElementById('game-room-code-tag').textContent = data.roomId;
+      multiGameOver = false;
+
+      const isRace = (data.subMode === 'race');
+      const players = data.players || [];
+      const modeBadge = document.getElementById('multi-mode-badge');
+      if (modeBadge) {
+        modeBadge.className = isRace 
+          ? "px-2 py-0.5 rounded-lg text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30"
+          : "px-2 py-0.5 rounded-lg text-xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30";
+        modeBadge.innerHTML = isRace ? '<i class="fa-solid fa-bolt mr-1"></i>全員競速搶猜' : '<i class="fa-solid fa-arrows-rotate mr-1"></i>輪流接力猜';
+      }
+
+      const totalTag = document.getElementById('multi-total-players-tag');
+      if (totalTag) totalTag.textContent = `共 ${players.length} 人在線`;
+
+      const lockOverlay = document.getElementById('multi-turn-lock');
+      const tag = document.getElementById('multi-turn-player-tag');
+      const inputHint = document.getElementById('multi-input-hint');
+      const badgesTitle = document.getElementById('multi-player-badges-title');
+      const historyTitle = document.getElementById('multi-history-title');
+
+      if (isRace) {
+        // === 模式 2：全員競速搶猜模式 ===
+        lockOverlay.classList.add('hidden'); // 永遠不鎖定！每台平板各自全力猜
+        tag.className = "px-3 py-1.5 rounded-xl bg-amber-500/20 text-amber-300 font-bold border border-amber-500/40 text-xs sm:text-sm flex items-center gap-2 animate-pulse";
+        tag.innerHTML = `<i class="fa-solid fa-bolt text-amber-400"></i> <span>競速搶猜中！誰先猜出誰奪冠！</span>`;
+        inputHint.innerHTML = `⚡ <strong class="text-amber-400">零時差競速</strong>：輸入你的 <span class="current-digit-label text-cyan-400 font-bold">${digitCount}</span> 位猜測`;
+
+        badgesTitle.innerHTML = `<i class="fa-solid fa-flag-checkered text-amber-400 mr-1.5"></i> 全體特工競速進度榜：`;
+        historyTitle.innerHTML = `<i class="fa-solid fa-user-clock text-amber-400 mr-1.5"></i> 我的個人破譯紀錄 (比誰快！)`;
+
+        // 競速進度榜：展示每位特工猜測次數與目前最佳成績
+        const badgesContainer = document.getElementById('multi-player-badges');
+        badgesContainer.innerHTML = players.map((p, i) => {
+          const isMe = (p.id === auth.currentUser.uid);
+          return `
+            <div class="p-2 rounded-xl text-xs font-semibold flex items-center justify-between border ${
+              isMe 
+                ? 'bg-amber-950/40 border-amber-500/60 text-amber-200' 
+                : 'bg-slate-800 border-slate-700 text-slate-300'
+            } w-full sm:w-[calc(50%-4px)]">
+              <span class="flex items-center gap-1.5 truncate">
+                <span class="w-5 h-5 rounded-md bg-slate-700 text-[10px] font-digital font-bold flex items-center justify-center">${i + 1}</span>
+                <span class="font-bold truncate">${p.name} ${isMe ? '(我)' : ''}</span>
+              </span>
+              <div class="flex items-center gap-2 flex-shrink-0">
+                <span class="text-[11px] text-slate-400 font-digital">${p.attempts || 0} 步</span>
+                <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-digital text-[11px] font-bold border border-emerald-500/30">
+                  ${p.bestA || 0}A${p.bestB || 0}B
+                </span>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        renderMultiSlots();
+        renderMultiRaceHistoryList(data);
+      } else {
+        // === 模式 1：輪流接力猜模式 ===
+        const currentTurnPlayer = players[(data.turnIndex || 0) % players.length];
+        const isMyTurn = currentTurnPlayer && (currentTurnPlayer.id === auth.currentUser.uid);
+
+        tag.className = "px-3 py-1.5 rounded-xl bg-indigo-500/20 text-indigo-300 font-bold border border-indigo-500/40 text-xs sm:text-sm flex items-center gap-2";
+        tag.innerHTML = `<i class="fa-solid fa-crown text-amber-400"></i> <span>輪到：${currentTurnPlayer ? currentTurnPlayer.name : ''} ${isMyTurn ? '(是你！)' : ''}</span>`;
+        inputHint.innerHTML = `輪流猜測：輸入 <span class="current-digit-label text-cyan-400 font-bold">${digitCount}</span> 位猜測`;
+
+        badgesTitle.innerHTML = `<i class="fa-solid fa-arrows-spin text-cyan-400 mr-1.5"></i> 輪流出招順序 (最多 20 人)：`;
+        historyTitle.innerHTML = `<i class="fa-solid fa-list-check text-cyan-400 mr-1.5"></i> 全場共用線索池`;
+
+        const lockMsg = document.getElementById('multi-turn-lock-msg');
+        if (isMyTurn) {
+          lockOverlay.classList.add('hidden');
+        } else {
+          lockOverlay.classList.remove('hidden');
+          lockMsg.innerHTML = `輪到特工 <strong class="text-cyan-400">${currentTurnPlayer ? currentTurnPlayer.name : ''}</strong> 思考猜測中...`;
+        }
+
+        // 輪流排程徽章列
+        const badgesContainer = document.getElementById('multi-player-badges');
+        badgesContainer.innerHTML = players.map((p, i) => {
+          const isCurrent = (i === ((data.turnIndex || 0) % players.length));
+          const isMe = (p.id === auth.currentUser.uid);
+          return `
+            <span class="px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 ${
+              isCurrent 
+                ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30 ring-2 ring-cyan-300' 
+                : 'bg-slate-800 text-slate-400'
+            }">
+              <span class="font-digital text-[10px] opacity-75">${i + 1}.</span> 
+              ${p.name} ${isMe ? '(我)' : ''}
+            </span>
+          `;
+        }).join('');
+
+        renderMultiSlots();
+        renderMultiHistoryList(data);
+      }
+    }
+
+    function renderMultiSlots() {
+      const container = document.getElementById('multi-input-slots');
+      if (!container) return;
+      container.innerHTML = '';
+      for (let i = 0; i < digitCount; i++) {
+        const char = multiCurrentGuess[i] || '';
+        const slot = document.createElement('div');
+        slot.className = `w-12 h-14 rounded-2xl flex items-center justify-center text-2xl font-digital font-bold border-2 ${
+          char ? 'border-cyan-500 bg-cyan-950/40 text-cyan-200' : 'border-slate-700 bg-slate-800 text-slate-500'
+        }`;
+        slot.textContent = char;
+        container.appendChild(slot);
+      }
+    }
+
+    window.multiKeypadPress = function(num) {
+      if (multiGameOver || multiCurrentGuess.length >= digitCount) return;
+      if (multiCurrentGuess.includes(num)) {
+        playSound('error');
+        showToast(`數字 ${num} 不可重複！`, 'error');
+        return;
+      }
+      playSound('click');
+      multiCurrentGuess += num;
+      renderMultiSlots();
+    };
+
+    window.multiKeypadBack = function() {
+      if (multiGameOver || multiCurrentGuess.length === 0) return;
+      playSound('delete');
+      multiCurrentGuess = multiCurrentGuess.slice(0, -1);
+      renderMultiSlots();
+    };
+
+    // 送出多人猜測至 Firestore (支援輪流與競速兩種模式)
+    window.submitMultiGuessFirebase = async function() {
+      if (!db || !auth.currentUser || !multiRoomId || multiGameOver) return;
+      const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', multiRoomId);
+
+      try {
+        const snap = await getDoc(roomRef);
+        if (!snap.exists()) return;
+        const data = snap.data();
+        const players = data.players || [];
+        const isRace = (data.subMode === 'race');
+
+        if (multiCurrentGuess.length !== digitCount) {
+          playSound('error');
+          showToast(`請輸入滿 ${digitCount} 位數字！`, 'error');
+          return;
+        }
+
+        const res = calculateAB(data.secret, multiCurrentGuess);
+        const isWin = (res.a === digitCount);
+
+        if (isRace) {
+          // === 競速模式送出：無回合限制，更新該玩家統計與個人紀錄 ===
+          const myIndex = players.findIndex(p => p.id === auth.currentUser.uid);
+          if (myIndex === -1) return;
+
+          const me = players[myIndex];
+          const newAttempts = (me.attempts || 0) + 1;
+          const currentBestA = me.bestA || 0;
+          const currentBestB = me.bestB || 0;
+
+          // 更新個人最高 A/B
+          let newBestA = currentBestA;
+          let newBestB = currentBestB;
+          if (res.a > currentBestA || (res.a === currentBestA && res.b > currentBestB)) {
+            newBestA = res.a;
+            newBestB = res.b;
+          }
+
+          const myHistoryItem = {
+            guess: multiCurrentGuess,
+            a: res.a,
+            b: res.b,
+            step: newAttempts,
+            timestamp: Date.now()
+          };
+          const updatedPersonalHistory = [myHistoryItem, ...(me.personalHistory || [])];
+
+          players[myIndex] = {
+            ...me,
+            attempts: newAttempts,
+            bestA: newBestA,
+            bestB: newBestB,
+            personalHistory: updatedPersonalHistory
+          };
+
+          const updatePayload = { players: players };
+
+          if (isWin) {
+            updatePayload.status = 'ended';
+            updatePayload.winner = {
+              id: auth.currentUser.uid,
+              name: me.name,
+              attempts: newAttempts
+            };
+          }
+
+          multiCurrentGuess = "";
+          renderMultiSlots();
+          await updateDoc(roomRef, updatePayload);
+
+          if (!isWin) playSound('clue');
+        } else {
+          // === 輪流模式送出：需核對輪值玩家 ===
+          const currentTurnPlayer = players[(data.turnIndex || 0) % players.length];
+          if (!currentTurnPlayer || currentTurnPlayer.id !== auth.currentUser.uid) {
+            showToast("尚未輪到你的回合！", "error");
+            return;
+          }
+
+          const historyItem = {
+            playerId: auth.currentUser.uid,
+            playerName: currentTurnPlayer.name,
+            guess: multiCurrentGuess,
+            a: res.a,
+            b: res.b,
+            timestamp: Date.now()
+          };
+
+          const updatePayload = {
+            history: [historyItem, ...(data.history || [])],
+            turnIndex: (data.turnIndex || 0) + 1
+          };
+
+          if (isWin) {
+            updatePayload.status = 'ended';
+            updatePayload.winner = { id: auth.currentUser.uid, name: currentTurnPlayer.name };
+          }
+
+          multiCurrentGuess = "";
+          renderMultiSlots();
+          await updateDoc(roomRef, updatePayload);
+
+          if (!isWin) playSound('clue');
+        }
+      } catch (e) {
+        console.error("Submit multi guess error:", e);
+        showToast("送出猜測失敗，請確認連線！", "error");
+      }
+    };
+
+    function renderMultiRaceHistoryList(data) {
+      const list = document.getElementById('multi-history-list');
+      const counter = document.getElementById('multi-history-counter');
+      const players = data.players || [];
+      const me = players.find(p => p.id === auth.currentUser.uid);
+      const personalHistory = me?.personalHistory || [];
+
+      if (counter) counter.textContent = `${personalHistory.length} 次猜測`;
+      if (personalHistory.length === 0) {
+        list.innerHTML = `
+          <div class="text-center py-12 text-slate-500 text-xs">
+            <i class="fa-solid fa-stopwatch text-2xl text-amber-400/40 mb-2 block"></i>
+            競速開始！所有人同時搶答，快輸入猜測看誰先攻破！
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = personalHistory.map(item => `
+        <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-800/80 border border-amber-500/30">
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-bold text-amber-400 w-8 text-center font-digital">#${item.step}</span>
+            <span class="font-digital text-base font-bold tracking-widest text-white">${item.guess}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-400 font-digital font-bold text-xs border border-emerald-500/30">
+              ${item.a}A
+            </span>
+            <span class="px-2 py-0.5 rounded-lg bg-amber-500/20 text-amber-400 font-digital font-bold text-xs border border-amber-500/30">
+              ${item.b}B
+            </span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderMultiHistoryList(data) {
+      const list = document.getElementById('multi-history-list');
+      const history = data.history || [];
+      document.getElementById('multi-history-counter').textContent = `${history.length} 條紀錄`;
+      if (history.length === 0) {
+        list.innerHTML = `<div class="text-slate-500 text-xs text-center py-12">戰局開始！首位特工請輸入猜測...</div>`;
+        return;
+      }
+      list.innerHTML = history.map((item) => {
+        const isMe = (item.playerId === auth.currentUser.uid);
+        return `
+          <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-800/80 border ${isMe ? 'border-cyan-500/40 bg-cyan-950/20' : 'border-slate-700/60'}">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-semibold px-2 py-0.5 rounded ${isMe ? 'bg-cyan-500/20 text-cyan-300 font-bold' : 'bg-slate-700 text-indigo-300'}">${item.playerName}</span>
+              <span class="font-digital font-bold text-sm tracking-widest text-white">${item.guess}</span>
+            </div>
+            <div class="flex gap-1.5 font-digital font-bold text-xs">
+              <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">${item.a}A</span>
+              <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">${item.b}B</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function handleMultiEnd(data) {
+      multiGameOver = true;
+      playSound('win');
+      triggerConfetti();
+
+      const winner = data.winner;
+      const isWinner = (winner && winner.id === auth.currentUser.uid);
+      const isRace = (data.subMode === 'race');
+
+      let desc = "";
+      if (isRace) {
+        desc = `${winner ? winner.name : '有人'} 在競速中率先解開密碼！耗費 ${winner?.attempts || '數'} 步率先衝線奪冠！`;
+      } else {
+        desc = `${winner ? winner.name : '有人'} 成功命中終極密碼！全場共歷經 ${(data.history || []).length} 次接力推理。`;
+      }
+
+      showWinModal({
+        title: isWinner ? "👑 速度之王！你率先解出奪冠！" : `🎉 ${winner ? winner.name : '有人'} 率先破譯獲勝！`,
+        msg: desc,
+        answer: data.secret,
+        onRestart: () => leaveMultiRoom(true)
+      });
+    }
+
+    window.leaveMultiRoom = function(promptUser = true) {
+      if (multiUnsubscribe) {
+        multiUnsubscribe();
+        multiUnsubscribe = null;
+      }
+      multiRoomId = "";
+      isMultiHost = false;
+      multiCurrentGuess = "";
+      multiGameOver = false;
+
+      document.getElementById('multi-lobby-card').classList.remove('hidden');
+      document.getElementById('multi-waiting-card').classList.add('hidden');
+      document.getElementById('multi-game-card').classList.add('hidden');
+
+      if (promptUser) showToast("已退出多人派對房間", "info");
+    };
+  </script>
+</body>
+</html>
