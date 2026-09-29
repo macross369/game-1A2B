@@ -1104,7 +1104,7 @@
 
     function listenDuelRoom(code) {
       if (duelState.unsub) duelState.unsub();
-      const { db, doc, onSnapshot } = window.FB;
+      const { db, doc, onSnapshot, updateDoc } = window.FB;
       const roomRef = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", code);
 
       duelState.unsub = onSnapshot(roomRef, (snap) => {
@@ -1113,6 +1113,133 @@
           leaveDuel();
           return;
         }
+        const data = snap.data();
+        digitCount = data.digitCount || digitCount;
+
+        // 即時更新雙方出題狀態指示燈
+        updateDuelReadyIndicator(data);
+
+        const isP1Ready = data.p1 && data.p1.ready;
+        const isP2Ready = data.p2 && data.p2.ready;
+
+        // 關鍵修復：只要雙方皆已鎖定密碼，兩端平板皆能觸發並自動切換為對戰
+        if (isP1Ready && isP2Ready) {
+          if (data.status !== 'playing' && data.status !== 'finished') {
+            updateDoc(roomRef, { status: 'playing', updatedAt: Date.now() }).catch(() => {});
+          }
+          document.getElementById('duel-lobby-card').classList.add('hidden');
+          document.getElementById('duel-waiting-card').classList.add('hidden');
+          document.getElementById('duel-secret-card').classList.add('hidden');
+          document.getElementById('duel-arena-card').classList.remove('hidden');
+          renderDuelArena(data);
+          return;
+        }
+
+        if (data.status === 'setup') {
+          document.getElementById('duel-lobby-card').classList.add('hidden');
+          document.getElementById('duel-waiting-card').classList.add('hidden');
+          document.getElementById('duel-secret-card').classList.remove('hidden');
+          renderSlots('duel-secret-slots', duelState.mySecret, digitCount);
+        } else if (data.status === 'playing') {
+          document.getElementById('duel-secret-card').classList.add('hidden');
+          document.getElementById('duel-arena-card').classList.remove('hidden');
+          renderDuelArena(data);
+        }
+
+        if (data.winner) {
+          handleDuelWinner(data);
+        }
+      });
+    }
+
+    function updateDuelReadyIndicator(data) {
+      const p1Dot = document.getElementById('duel-p1-ready-dot');
+      const p1Text = document.getElementById('duel-p1-ready-text');
+      const p2Dot = document.getElementById('duel-p2-ready-dot');
+      const p2Text = document.getElementById('duel-p2-ready-text');
+      if (!p1Dot || !p2Dot) return;
+
+      const myObj = (duelState.role === 'p1') ? data.p1 : data.p2;
+      const oppObj = (duelState.role === 'p1') ? data.p2 : data.p1;
+      const oppName = oppObj?.name || '對手';
+
+      if (myObj?.ready) {
+        p1Dot.className = "w-2 h-2 rounded-full bg-emerald-400";
+        p1Text.innerHTML = `我方：已鎖定 ✔`;
+        p1Text.className = "text-emerald-400 font-bold truncate";
+      } else {
+        p1Dot.className = "w-2 h-2 rounded-full bg-amber-400 animate-pulse";
+        p1Text.innerHTML = `我方：出題中...`;
+        p1Text.className = "text-amber-400 truncate";
+      }
+
+      if (oppObj?.ready) {
+        p2Dot.className = "w-2 h-2 rounded-full bg-emerald-400";
+        p2Text.innerHTML = `${oppName}：已鎖定 ✔`;
+        p2Text.className = "text-emerald-400 font-bold truncate";
+      } else {
+        p2Dot.className = "w-2 h-2 rounded-full bg-amber-400 animate-pulse";
+        p2Text.innerHTML = `${oppName}：出題中...`;
+        p2Text.className = "text-amber-400 truncate";
+      }
+    }
+
+    function duelSecretPress(k) {
+      if (duelState.mySecret.length >= digitCount) return;
+      if (duelState.mySecret.includes(k)) {
+        playSound('error');
+        showToast(`出題數字 ${k} 不可重複！`, "error");
+        return;
+      }
+      duelState.mySecret += k;
+      renderSlots('duel-secret-slots', duelState.mySecret, digitCount);
+      playSound('click');
+    }
+
+    function randomDuelSecret() {
+      duelState.mySecret = generateRandomSecret(digitCount);
+      renderSlots('duel-secret-slots', duelState.mySecret, digitCount);
+      playSound('click');
+    }
+
+    function clearDuelSecret() {
+      duelState.mySecret = '';
+      renderSlots('duel-secret-slots', '', digitCount);
+      playSound('delete');
+    }
+
+    async function lockDuelSecret() {
+      if (duelState.mySecret.length !== digitCount) {
+        playSound('error');
+        showToast(`出題密碼必須為 ${digitCount} 位！`, "error");
+        return;
+      }
+      const { db, doc, getDoc, updateDoc } = window.FB;
+      const roomRef = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", duelState.roomId);
+
+      document.getElementById('btn-lock-duel-secret').classList.add('hidden');
+      document.getElementById('duel-secret-notice').classList.remove('hidden');
+
+      const snap = await getDoc(roomRef);
+      if (!snap.exists()) return;
+      const data = snap.data();
+
+      const updatePayload = {};
+      if (duelState.role === 'p1') {
+        updatePayload['p1.secret'] = duelState.mySecret;
+        updatePayload['p1.ready'] = true;
+        if (data.p2 && data.p2.ready) updatePayload.status = 'playing';
+      } else {
+        updatePayload['p2.secret'] = duelState.mySecret;
+        updatePayload['p2.ready'] = true;
+        if (data.p1 && data.p1.ready) updatePayload.status = 'playing';
+      }
+      updatePayload.updatedAt = Date.now();
+
+      await updateDoc(roomRef, updatePayload);
+      playSound('click');
+      showToast("密碼已鎖定！等待對手出題完成即可開戰");
+    }
         const data = snap.data();
         digitCount = data.digitCount || digitCount;
 
