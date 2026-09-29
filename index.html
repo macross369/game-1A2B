@@ -1,59 +1,77 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>1A2B 數智對決 - 跨平板連線版</title>
-  
-  <!-- Tailwind CSS -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>1A2B 數智對決 - 多人跨平板連線版</title>
+
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <!-- Tone.js 音效 -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
-  <!-- Canvas Confetti -->
+  <!-- FontAwesome 圖標 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Google 字體 -->
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <!-- Canvas Confetti 勝利彩帶 -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  <!-- QRCode.js -->
+  <!-- Tone.js 音效合成 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+  <!-- QRCode.js (生成掃碼快速加入房間) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Noto Sans TC', 'sans-serif'],
+            digital: ['Chakra Petch', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Zen+Maru+Gothic:wght@500;700;900&display=swap');
     body {
-      font-family: 'Zen Maru Gothic', -apple-system, BlinkMacSystemFont, sans-serif;
       touch-action: manipulation;
       user-select: none;
       -webkit-user-select: none;
     }
-    .font-digital {
-      font-family: 'Share Tech Mono', monospace;
-    }
     .custom-scroll::-webkit-scrollbar {
-      width: 4px;
-      height: 4px;
+      width: 6px;
+      height: 6px;
     }
     .custom-scroll::-webkit-scrollbar-track {
-      background: rgba(15, 23, 42, 0.6);
+      background: rgba(30, 41, 59, 0.5);
+      border-radius: 4px;
     }
     .custom-scroll::-webkit-scrollbar-thumb {
-      background: rgba(99, 102, 241, 0.4);
+      background: rgba(99, 102, 241, 0.5);
       border-radius: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: rgba(99, 102, 241, 0.8);
+    }
+    .btn-press:active {
+      transform: scale(0.95);
     }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-indigo-500 selection:text-white">
 
   <!-- 頂部導航列 -->
-  <header class="bg-slate-900/90 border-b border-slate-800 sticky top-0 z-40 px-3 sm:px-4 py-2.5 backdrop-blur-md">
-    <div class="max-w-5xl mx-auto flex items-center justify-between gap-2">
+  <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40 px-3 py-2.5 transition-all">
+    <div class="max-w-4xl mx-auto flex items-center justify-between gap-2">
       <div class="flex items-center gap-2.5">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg text-white font-digital font-bold text-lg">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white font-digital font-bold text-base">
           1A
         </div>
         <div>
-          <h1 class="text-base sm:text-lg font-black tracking-wide bg-gradient-to-r from-white via-indigo-100 to-indigo-400 bg-clip-text text-transparent">
+          <h1 class="text-base sm:text-lg font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">
             1A2B 數智對決
           </h1>
-          <p class="text-[10px] text-slate-400 font-digital tracking-widest hidden sm:block">TABLET BATTLE ARENA</p>
+          <p class="text-[10px] text-slate-400 font-digital tracking-wider hidden sm:block">跨平板即時互動系統</p>
         </div>
       </div>
 
@@ -80,30 +98,29 @@
     </div>
   </header>
 
-  <!-- 模式切換 Tabs -->
-  <nav class="max-w-5xl mx-auto w-full px-3 pt-3 pb-1">
-    <div class="grid grid-cols-3 gap-2 p-1.5 bg-slate-900 border border-slate-800 rounded-2xl max-w-lg mx-auto shadow-md">
-      <button id="tab-btn-single" onclick="switchMode('single')" class="py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-1.5 bg-indigo-600 text-white shadow">
+  <!-- 模式切換導覽列 -->
+  <nav class="max-w-4xl mx-auto w-full px-3 pt-3 pb-1">
+    <div class="grid grid-cols-3 gap-1.5 p-1 bg-slate-900 border border-slate-800 rounded-2xl max-w-md mx-auto shadow-md">
+      <button onclick="switchMode('single')" id="tab-single" class="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs sm:text-sm font-bold transition bg-indigo-600 text-white shadow">
         <i class="fa-solid fa-user"></i>
         <span>個人模式</span>
       </button>
-      <button id="tab-btn-duel" onclick="switchMode('duel')" class="py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-slate-200">
+      <button onclick="switchMode('duel')" id="tab-duel" class="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs sm:text-sm font-bold transition text-slate-400 hover:text-slate-200">
         <i class="fa-solid fa-user-ninja"></i>
         <span>雙人對決</span>
       </button>
-      <button id="tab-btn-multi" onclick="switchMode('multi')" class="py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-slate-200">
+      <button onclick="switchMode('multi')" id="tab-multi" class="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs sm:text-sm font-bold transition text-slate-400 hover:text-slate-200">
         <i class="fa-solid fa-users"></i>
         <span>多人派對</span>
       </button>
     </div>
   </nav>
 
-  <!-- 主要遊玩區塊 -->
-  <main class="max-w-5xl mx-auto w-full p-3 sm:p-4 flex-1 flex flex-col justify-start">
+  <!-- 主畫面內容容器 -->
+  <main class="max-w-4xl mx-auto w-full p-3 sm:p-4 flex-1 flex flex-col justify-start">
 
     <!-- ================= 1. 個人闖關模式 ================= -->
-    <section id="mode-single-section" class="w-full max-w-4xl mx-auto space-y-4">
-      
+    <section id="mode-single-section" class="w-full space-y-4">
       <!-- 未開始引導畫面 -->
       <div id="single-start-view" class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 text-center space-y-4 shadow-xl">
         <div class="w-16 h-16 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto text-2xl border border-indigo-500/20">
@@ -143,9 +160,8 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-          <!-- 左側：輸入格與九宮格鍵盤 (7 格) -->
+          <!-- 左側：輸入格與九宮格鍵盤 -->
           <div class="md:col-span-7 space-y-4">
-            <!-- 輸入槽 -->
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-lg flex flex-col items-center">
               <div id="single-slots-box" class="flex gap-2.5 sm:gap-3 my-2 justify-center"></div>
               <p class="text-xs text-slate-400 mt-2">請輸入 <span class="digit-tag font-digital">4</span> 個不重複數字</p>
@@ -195,7 +211,7 @@
             </div>
           </div>
 
-          <!-- 右側：歷史線索清單 (5 格) -->
+          <!-- 右側：歷史線索清單 -->
           <div class="md:col-span-5 bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-lg flex flex-col h-[440px]">
             <div class="flex items-center justify-between pb-2.5 border-b border-slate-800 text-xs">
               <span class="font-bold text-slate-300"><i class="fa-solid fa-list-ol mr-1.5 text-indigo-400"></i>猜測歷程</span>
@@ -208,8 +224,7 @@
     </section>
 
     <!-- ================= 2. 雙人對決模式 ================= -->
-    <section id="mode-duel-section" class="hidden w-full max-w-4xl mx-auto space-y-4">
-      
+    <section id="mode-duel-section" class="hidden w-full space-y-4">
       <!-- 雙人大廳 -->
       <div id="duel-lobby-card" class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl max-w-lg mx-auto">
         <div class="text-center space-y-2 mb-6">
@@ -217,7 +232,7 @@
             <i class="fa-solid fa-user-ninja"></i>
           </div>
           <h2 class="text-xl font-bold text-white">雙平板 1v1 線上對決</h2>
-          <p class="text-xs text-slate-400">兩台平板互相為對方秘密出題，支援掃碼秒速連線！</p>
+          <p class="text-xs text-slate-400">兩台平板互相秘密出題，支援掃碼秒速連線！</p>
         </div>
 
         <div class="space-y-4">
@@ -239,7 +254,7 @@
         </div>
       </div>
 
-      <!-- 開房等待對手加入 (含 QR Code) -->
+      <!-- 等待對手加入 (含 QR Code) -->
       <div id="duel-waiting-card" class="hidden bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl max-w-md mx-auto text-center space-y-4">
         <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto text-xl border border-indigo-500/20">
           <i class="fa-solid fa-qrcode"></i>
@@ -269,7 +284,7 @@
 
       <!-- 秘密出題階段 -->
       <div id="duel-secret-card" class="hidden bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl max-w-md mx-auto space-y-4">
-        <!-- 雙方出題就緒狀態指示條 -->
+        <!-- 雙方出題指示條 -->
         <div class="grid grid-cols-2 gap-2 p-2 bg-slate-950 rounded-2xl border border-slate-800 text-xs">
           <div class="flex items-center gap-1.5 px-2 py-1 bg-slate-900 rounded-xl">
             <span id="duel-my-ready-dot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
@@ -351,7 +366,7 @@
               <p class="text-xs text-slate-400 mt-2">破譯對方的神祕密碼！</p>
             </div>
 
-            <!-- 九宮格 -->
+            <!-- 九宮格鍵盤 -->
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-3 sm:p-4 shadow-lg">
               <div class="grid grid-cols-3 gap-2">
                 <button onclick="duelKeyPress('1')" class="h-12 rounded-2xl bg-slate-800 text-xl font-digital font-bold text-white hover:bg-slate-700">1</button>
@@ -367,7 +382,7 @@
                   <i class="fa-solid fa-delete-left"></i>
                 </button>
                 <button onclick="duelKeyPress('0')" class="h-12 rounded-2xl bg-slate-800 text-xl font-digital font-bold text-white hover:bg-slate-700">0</button>
-                <button onclick="submitDuelGuess()" class="h-12 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold text-base shadow flex items-center justify-center gap-1.5">
+                <button id="btn-duel-submit" onclick="submitDuelGuess()" class="h-12 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold text-base shadow flex items-center justify-center gap-1.5 active:scale-95 transition">
                   <span>猜！</span>
                   <i class="fa-solid fa-crosshairs"></i>
                 </button>
@@ -391,8 +406,7 @@
     </section>
 
     <!-- ================= 3. 多人派對模式 ================= -->
-    <section id="mode-multi-section" class="hidden w-full max-w-4xl mx-auto space-y-4">
-      
+    <section id="mode-multi-section" class="hidden w-full space-y-4">
       <!-- 多人大廳 -->
       <div id="multi-lobby-card" class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl max-w-lg mx-auto">
         <div class="text-center space-y-2 mb-6">
@@ -400,7 +414,7 @@
             <i class="fa-solid fa-users"></i>
           </div>
           <h2 class="text-xl font-bold text-white">多人平板連線派對</h2>
-          <p class="text-xs text-slate-400">支援最多 20 位特工掃碼或輸碼同房競技！</p>
+          <p class="text-xs text-slate-400">支援最多 20 位同學掃碼或輸碼同房競技！</p>
         </div>
 
         <!-- 玩法選擇 -->
@@ -461,13 +475,13 @@
         </div>
 
         <div class="text-center space-y-1">
-          <h3 class="text-base font-bold text-white">等待特工集結 (<span id="multi-player-count">1</span>/20)</h3>
+          <h3 class="text-base font-bold text-white">等待同學集結 (<span id="multi-player-count">1</span>/20)</h3>
         </div>
 
         <div id="multi-players-list" class="max-h-40 overflow-y-auto custom-scroll grid grid-cols-2 sm:grid-cols-3 gap-2 p-2 bg-slate-950 rounded-2xl border border-slate-800"></div>
 
         <div id="multi-host-controls" class="pt-2">
-          <button onclick="startMultiGame()" class="w-full py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold rounded-2xl text-base shadow active:scale-95 transition">
+          <button id="btn-start-multi" onclick="startMultiGame()" class="w-full py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold rounded-2xl text-base shadow active:scale-95 transition">
             <i class="fa-solid fa-play mr-2"></i>全員到齊，立即開戰！
           </button>
         </div>
@@ -484,7 +498,7 @@
             <span class="text-xs font-digital text-slate-400">房號: <span id="multi-arena-room-tag" class="text-white font-bold">----</span></span>
             <span id="multi-rule-tag" class="text-xs px-2.5 py-0.5 rounded bg-slate-800 text-slate-300 font-digital">接力模式</span>
             <span id="multi-turn-badge" class="text-xs px-3 py-1 rounded-full font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
-              輪到特工思考中
+              輪到同學思考中
             </span>
           </div>
           <button onclick="leaveMulti()" class="text-xs text-slate-400 hover:text-rose-400">
@@ -492,15 +506,23 @@
           </button>
         </div>
 
-        <!-- 輪流次序列表 (支援20人) -->
+        <!-- 輪流次序列表 -->
         <div id="multi-order-bar" class="flex gap-2 overflow-x-auto custom-scroll pb-1 px-1"></div>
 
         <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
           <div class="md:col-span-7 space-y-4">
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-lg flex flex-col items-center relative overflow-hidden">
-              <div id="multi-lock-overlay" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-20 flex flex-col items-center justify-center p-4 text-center">
-                <i class="fa-solid fa-hourglass-half text-3xl text-amber-400 animate-spin mb-2"></i>
+              <div id="multi-lock-overlay" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-sm z-20 flex flex-col items-center justify-center p-4 text-center">
+                <i id="multi-lock-icon" class="fa-solid fa-hourglass-half text-3xl text-amber-400 animate-spin mb-2"></i>
                 <p id="multi-lock-text" class="text-sm font-bold text-white">等待隊友猜測中...</p>
+                <div id="multi-end-actions" class="hidden mt-3 flex items-center justify-center gap-2">
+                  <button onclick="rematchMultiGame()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition shadow active:scale-95 flex items-center gap-1.5">
+                    <i class="fa-solid fa-rotate-right"></i> 再比一次
+                  </button>
+                  <button onclick="leaveMulti()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition border border-slate-700 active:scale-95 flex items-center gap-1.5">
+                    <i class="fa-solid fa-door-open"></i> 離開房間
+                  </button>
+                </div>
               </div>
 
               <div id="multi-guess-slots" class="flex gap-2.5 sm:gap-3 my-2 justify-center"></div>
@@ -523,7 +545,7 @@
                   <i class="fa-solid fa-delete-left"></i>
                 </button>
                 <button onclick="multiKeyPress('0')" class="h-12 rounded-2xl bg-slate-800 text-xl font-digital font-bold text-white hover:bg-slate-700">0</button>
-                <button onclick="submitMultiGuess()" class="h-12 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold text-base shadow flex items-center justify-center gap-1.5">
+                <button id="btn-multi-submit" onclick="submitMultiGuess()" class="h-12 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold text-base shadow flex items-center justify-center gap-1.5 active:scale-95 transition">
                   <span>猜！</span>
                   <i class="fa-solid fa-bolt"></i>
                 </button>
@@ -545,51 +567,49 @@
 
   </main>
 
-  <!-- 勝利結算 Modal -->
-  <div id="win-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-    <div class="bg-gradient-to-b from-slate-900 to-slate-800 border border-indigo-500/40 rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl space-y-5">
-      <div class="w-16 h-16 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-300 text-slate-950 flex items-center justify-center mx-auto text-3xl shadow-xl shadow-amber-400/20">
+  <!-- 勝利結算彈窗 -->
+  <div id="win-modal" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-indigo-500/40 rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl space-y-5">
+      <div class="w-16 h-16 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center mx-auto text-3xl shadow-xl shadow-amber-400/20">
         <i class="fa-solid fa-trophy"></i>
       </div>
       <div>
-        <h3 id="win-title" class="text-2xl font-black text-white">密碼完全破譯！</h3>
-        <p id="win-subtitle" class="text-xs text-slate-400 mt-1">恭喜特工精準破譯成功</p>
+        <h3 id="win-title" class="text-xl font-bold text-white tracking-wide">恭喜破譯完成！</h3>
+        <p id="win-subtitle" class="text-xs text-slate-400 mt-1">智慧非凡！成功解開密碼</p>
       </div>
-      <div class="bg-slate-950/70 border border-slate-800 p-4 rounded-2xl space-y-1">
-        <div class="text-xs text-slate-400">最終謎底答案</div>
-        <div id="win-secret-display" class="text-3xl font-digital font-black text-amber-400 tracking-widest">????</div>
+      <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl space-y-1.5">
+        <span class="text-xs text-slate-400 block">終極正確密碼</span>
+        <div id="win-secret-code" class="text-3xl font-digital font-bold text-amber-400 tracking-widest">????</div>
       </div>
-      <button onclick="closeWinModal()" class="w-full py-3 bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold rounded-xl text-sm transition shadow">
-        確認收工
+      <button onclick="closeWinModal()" class="w-full py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold rounded-xl text-sm transition shadow">
+        確認關閉
       </button>
     </div>
   </div>
 
-  <!-- 診斷 Modal -->
-  <div id="diagnostic-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-        <h3 class="text-base font-bold text-white flex items-center gap-2">
-          <i class="fa-solid fa-network-wired text-indigo-400"></i> Firebase 連線診斷
-        </h3>
-        <button onclick="closeDiagnosticModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+  <!-- 連線診斷彈窗 -->
+  <div id="diagnostic-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-3xl p-5 sm:p-6 max-w-md w-full shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-plug text-indigo-400"></i>
+          <h3 class="text-sm font-bold text-white">Firebase 連線診斷</h3>
+        </div>
+        <button onclick="closeDiagnosticModal()" class="text-slate-400 hover:text-white text-xs">關閉</button>
       </div>
-      <div class="space-y-2.5 text-xs">
-        <div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl">
+      <div class="space-y-2 text-xs">
+        <div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800">
           <span class="text-slate-400">連線狀態:</span>
-          <span id="diag-status" class="font-bold text-emerald-400">已連線</span>
+          <span id="diag-status" class="font-bold text-amber-400">連線中...</span>
         </div>
-        <div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl">
-          <span class="text-slate-400">目前使用者:</span>
-          <span id="diag-uid" class="font-digital text-slate-300 truncate max-w-[200px]">驗證中...</span>
-        </div>
-        <div id="diag-err-box" class="hidden bg-rose-500/10 border border-rose-500/30 p-2.5 rounded-xl text-rose-300">
-          <span id="diag-err-msg"></span>
+        <div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+          <span class="text-slate-400">用戶識別碼 (UID):</span>
+          <span id="diag-uid" class="font-digital text-slate-300">未連線</span>
         </div>
       </div>
-      <button onclick="closeDiagnosticModal()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl">
-        關閉
-      </button>
+      <p class="text-[11px] text-slate-400 leading-relaxed">
+        若狀態顯示異常，請至 Firebase 後台確認已啟用「匿名驗證 (Anonymous Auth)」與 Firestore 測試規則。
+      </p>
     </div>
   </div>
 
@@ -597,14 +617,23 @@
   <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 pointer-events-none opacity-0 translate-y-4">
     <div class="bg-slate-800/95 border border-slate-700 text-white text-xs sm:text-sm px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2">
       <i id="toast-icon" class="fa-solid fa-circle-info text-indigo-400"></i>
-      <span id="toast-text">訊息內容</span>
+      <span id="toast-msg">提示訊息</span>
     </div>
   </div>
 
+  <!-- FIREBASE 模組系統 -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { 
+      getFirestore, 
+      doc, 
+      setDoc, 
+      getDoc, 
+      updateDoc, 
+      onSnapshot, 
+      arrayUnion 
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyA9iXwZHa9wfTibmXvihimg-Bq-78Y_iLo",
@@ -615,103 +644,121 @@
       appId: "1:932330742253:web:3fb9980e3ea3a1437e87e4"
     };
 
-    window.FB = {
-      isReady: false,
-      user: null,
-      error: null
-    };
+    let app, auth, db;
+    let currentUser = null;
 
     async function initFirebase() {
+      const dot = document.getElementById('fb-dot');
+      const text = document.getElementById('fb-status-text');
+      const diagStatus = document.getElementById('diag-status');
+      const diagUid = document.getElementById('diag-uid');
+
       try {
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
 
         const cred = await signInAnonymously(auth);
-        window.FB = {
-          isReady: true,
-          user: cred.user,
-          db,
-          doc,
-          getDoc,
-          setDoc,
-          updateDoc,
-          onSnapshot,
-          arrayUnion,
-          error: null
-        };
+        currentUser = cred.user;
 
-        const dot = document.getElementById('fb-dot');
-        const text = document.getElementById('fb-status-text');
-        if (dot) dot.className = "w-2 h-2 rounded-full bg-emerald-400";
-        if (text) {
-          text.textContent = "已連線";
-          text.className = "text-emerald-400 font-bold";
+        dot.className = "w-2 h-2 rounded-full bg-emerald-400";
+        text.innerText = "已連線";
+        text.className = "text-emerald-400 font-bold";
+
+        if (diagStatus) {
+          diagStatus.innerText = "連線成功 ✓";
+          diagStatus.className = "font-bold text-emerald-400";
+        }
+        if (diagUid) {
+          diagUid.innerText = currentUser.uid;
         }
 
-        if (typeof window.checkAutoJoinURL === 'function') {
+        window.FB_SYSTEM = { app, auth, db, currentUser, doc, setDoc, getDoc, updateDoc, onSnapshot, arrayUnion };
+
+        if (window.checkAutoJoinURL) {
           window.checkAutoJoinURL();
         }
       } catch (err) {
-        console.error("Firebase init failed:", err);
-        window.FB.error = err;
-        const dot = document.getElementById('fb-dot');
-        const text = document.getElementById('fb-status-text');
-        if (dot) dot.className = "w-2 h-2 rounded-full bg-rose-500";
-        if (text) {
-          text.textContent = "連線失敗";
-          text.className = "text-rose-400 font-bold";
+        console.error("Firebase 連線失敗:", err);
+        dot.className = "w-2 h-2 rounded-full bg-rose-500";
+        text.innerText = "連線失敗";
+        text.className = "text-rose-400 font-bold";
+
+        if (diagStatus) {
+          diagStatus.innerText = "連線失敗: " + (err.code || err.message);
+          diagStatus.className = "font-bold text-rose-400";
         }
       }
     }
 
-    initFirebase();
+    window.addEventListener('DOMContentLoaded', initFirebase);
   </script>
 
+  <!-- 主邏輯 JS -->
   <script>
-    /* ==========================================================================
-       全域變數與輔助工具
-       ========================================================================== */
     let currentMode = 'single';
     let digitCount = 4;
     let isSoundOn = true;
 
-    // Toast
-    function showToast(msg, type = 'info') {
-      const toast = document.getElementById('toast');
-      const text = document.getElementById('toast-text');
-      const icon = document.getElementById('toast-icon');
-      if (!toast || !text) return;
+    // 個人模式
+    let singleState = {
+      isPlaying: false,
+      secret: '',
+      currentInput: '',
+      history: [],
+      startTime: null,
+      timerId: null,
+      notes: Array(10).fill('normal')
+    };
 
-      text.textContent = msg;
-      icon.className = (type === 'error') 
-        ? 'fa-solid fa-circle-exclamation text-rose-400' 
-        : (type === 'success') ? 'fa-solid fa-circle-check text-emerald-400' : 'fa-solid fa-circle-info text-indigo-400';
+    // 雙人模式
+    let duelState = {
+      roomId: null,
+      myRole: null, // 'p1' 或 'p2'
+      myName: '學生',
+      mySecret: '',
+      currentInput: '',
+      lastData: null,
+      isSubmitting: false,
+      unsubscribe: null
+    };
 
-      toast.classList.remove('opacity-0', 'translate-y-4');
-      toast.classList.add('opacity-100', 'translate-y-0');
-      clearTimeout(window._toastTimer);
-      window._toastTimer = setTimeout(() => {
-        toast.classList.remove('opacity-100', 'translate-y-0');
-        toast.classList.add('opacity-0', 'translate-y-4');
-      }, 2200);
+    // 多人模式
+    let multiState = {
+      roomId: null,
+      isHost: false,
+      myName: '學生',
+      myId: 'player_' + Math.random().toString(36).substring(2, 8),
+      currentInput: '',
+      ruleType: 'turn',
+      lastData: null,
+      isSubmitting: false,
+      unsubscribe: null
+    };
+
+    /* Tone.js 音效控制 */
+    let synth = null;
+    function getSynth() {
+      if (!synth && window.Tone) {
+        synth = new Tone.PolySynth(Tone.Synth).toDestination();
+        synth.volume.value = -8;
+      }
+      return synth;
     }
 
-    // 音效系統
-    let synth = null;
     function playSound(type) {
-      if (!isSoundOn || typeof Tone === 'undefined') return;
+      if (!isSoundOn || !window.Tone) return;
       try {
         if (Tone.context.state !== 'running') Tone.start();
-        if (!synth) synth = new Tone.PolySynth(Tone.Synth).toDestination();
+        const s = getSynth();
         const now = Tone.now();
-        if (type === 'click') synth.triggerAttackRelease('C5', '32n', now);
-        else if (type === 'delete') synth.triggerAttackRelease('G4', '32n', now);
-        else if (type === 'error') synth.triggerAttackRelease('F3', '16n', now);
-        else if (type === 'clue') synth.triggerAttackRelease(['E5', 'G5'], '16n', now);
+        if (type === 'tap') s.triggerAttackRelease('C5', '16n', now);
+        else if (type === 'back') s.triggerAttackRelease('G4', '16n', now);
+        else if (type === 'error') s.triggerAttackRelease('F3', '8n', now);
+        else if (type === 'guess') s.triggerAttackRelease(['E5', 'G5'], '16n', now);
         else if (type === 'win') {
-          synth.triggerAttackRelease(['C5', 'E5', 'G5', 'C6'], '8n', now);
-          confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+          s.triggerAttackRelease(['C5', 'E5', 'G5', 'C6'], '4n', now);
+          confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
         }
       } catch (e) {}
     }
@@ -719,63 +766,78 @@
     function toggleSound() {
       isSoundOn = !isSoundOn;
       const btn = document.getElementById('sound-btn');
-      if (btn) {
-        btn.innerHTML = isSoundOn 
-          ? '<i class="fa-solid fa-volume-high text-xs"></i>' 
-          : '<i class="fa-solid fa-volume-xmark text-xs text-slate-500"></i>';
-      }
+      btn.innerHTML = isSoundOn 
+        ? '<i class="fa-solid fa-volume-high text-xs"></i>' 
+        : '<i class="fa-solid fa-volume-xmark text-xs text-slate-500"></i>';
       showToast(isSoundOn ? "音效已開啟" : "音效已靜音");
     }
 
-    // 位數切換 (2~4)
-    function setDigitCount(num) {
-      if (singleState.isPlaying || duelState.roomId || multiState.roomId) {
-        showToast("遊戲對戰進行中，無法切換位數！", "error");
-        return;
-      }
-      digitCount = num;
-      [2, 3, 4].forEach(d => {
-        const btn = document.getElementById(`btn-digit-${d}`);
-        if (btn) {
-          btn.className = (d === num)
-            ? "px-2 py-0.5 text-xs font-digital font-bold rounded-lg transition bg-indigo-600 text-white shadow"
-            : "px-2 py-0.5 text-xs font-digital font-bold rounded-lg transition text-slate-400";
-        }
-      });
-      document.querySelectorAll('.digit-tag').forEach(el => el.textContent = num);
-      renderSlots('single-slots-box', singleState.guess, digitCount);
-      playSound('click');
+    function showToast(msg, type = 'info') {
+      const toast = document.getElementById('toast');
+      const text = document.getElementById('toast-msg');
+      const icon = document.getElementById('toast-icon');
+
+      text.innerText = msg;
+      icon.className = type === 'error' 
+        ? 'fa-solid fa-triangle-exclamation text-rose-400' 
+        : 'fa-solid fa-circle-info text-indigo-400';
+
+      toast.classList.remove('opacity-0', 'translate-y-4');
+      toast.classList.add('opacity-100', 'translate-y-0');
+      setTimeout(() => {
+        toast.classList.remove('opacity-100', 'translate-y-0');
+        toast.classList.add('opacity-0', 'translate-y-4');
+      }, 2300);
     }
 
-    // 模式切換
+    function setDigitCount(n) {
+      if (singleState.isPlaying || duelState.roomId || multiState.roomId) {
+        showToast("遊戲或連線進行中，無法更換位數！", "error");
+        return;
+      }
+      digitCount = n;
+      [2, 3, 4].forEach(d => {
+        const btn = document.getElementById(`btn-digit-${d}`);
+        btn.className = d === n
+          ? "px-2 py-0.5 text-xs font-digital font-bold rounded-lg transition bg-indigo-600 text-white shadow"
+          : "px-2 py-0.5 text-xs font-digital font-bold rounded-lg transition text-slate-400";
+      });
+      document.querySelectorAll('.digit-tag').forEach(el => el.innerText = n);
+      updateSlotDisplay('single-slots-box', singleState.currentInput);
+      playSound('tap');
+    }
+
     function switchMode(mode) {
       currentMode = mode;
       ['single', 'duel', 'multi'].forEach(m => {
-        const btn = document.getElementById(`tab-btn-${m}`);
+        const tab = document.getElementById(`tab-${m}`);
         const sec = document.getElementById(`mode-${m}-section`);
         if (m === mode) {
-          if (btn) btn.className = "py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-1.5 bg-indigo-600 text-white shadow";
-          if (sec) sec.classList.remove('hidden');
+          tab.className = "flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs sm:text-sm font-bold transition bg-indigo-600 text-white shadow";
+          sec.classList.remove('hidden');
         } else {
-          if (btn) btn.className = "py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-slate-200";
-          if (sec) sec.classList.add('hidden');
+          tab.className = "flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs sm:text-sm font-bold transition text-slate-400 hover:text-slate-200";
+          sec.classList.add('hidden');
         }
       });
-      playSound('click');
+      playSound('tap');
     }
 
-    // 1A2B 演算與隨機數生成
-    function generateRandomSecret(len) {
-      const digits = ['0','1','2','3','4','5','6','7','8','9'];
+    function generate4Code() {
+      return Math.floor(1000 + Math.random() * 9000).toString();
+    }
+
+    function generateSecretNum(digits = digitCount) {
+      const nums = ['0','1','2','3','4','5','6','7','8','9'];
       let res = '';
-      for (let i = 0; i < len; i++) {
-        const idx = Math.floor(Math.random() * digits.length);
-        res += digits.splice(idx, 1)[0];
+      for (let i = 0; i < digits; i++) {
+        const idx = Math.floor(Math.random() * nums.length);
+        res += nums.splice(idx, 1)[0];
       }
       return res;
     }
 
-    function calcAB(guess, secret) {
+    function calculate1A2B(guess, secret) {
       let a = 0, b = 0;
       for (let i = 0; i < guess.length; i++) {
         if (guess[i] === secret[i]) a++;
@@ -784,182 +846,104 @@
       return { a, b };
     }
 
-    function renderSlots(containerId, value, length) {
-      const container = document.getElementById(containerId);
-      if (!container) return;
-      container.innerHTML = '';
-      for (let i = 0; i < length; i++) {
-        const char = value[i] || '';
+    function updateSlotDisplay(containerId, val, count = digitCount) {
+      const box = document.getElementById(containerId);
+      if (!box) return;
+      box.innerHTML = '';
+      for (let i = 0; i < count; i++) {
+        const char = val[i] || '';
         const slot = document.createElement('div');
-        slot.className = `w-12 h-14 sm:w-14 sm:h-16 rounded-2xl border-2 flex items-center justify-center text-2xl sm:text-3xl font-digital font-bold transition-all ${
+        slot.className = `w-11 h-13 sm:w-13 sm:h-15 rounded-2xl border-2 flex items-center justify-center text-xl sm:text-2xl font-digital font-bold transition-all ${
           char 
-            ? 'border-indigo-500 bg-indigo-500/10 text-white shadow-lg shadow-indigo-500/10 scale-105' 
+            ? 'border-indigo-500 bg-indigo-500/10 text-white shadow-md shadow-indigo-500/10 scale-105' 
             : 'border-slate-700 bg-slate-800 text-slate-500'
         }`;
-        slot.textContent = char;
-        container.appendChild(slot);
+        slot.innerText = char;
+        box.appendChild(slot);
       }
     }
 
-    // QR Code 繪製支援
-    function drawQRCode(boxId, text) {
-      const box = document.getElementById(boxId);
+    function renderQRCodeHelper(containerId, urlText) {
+      const box = document.getElementById(containerId);
       if (!box) return;
       box.innerHTML = '';
       try {
-        if (typeof QRCode !== 'undefined') {
-          new QRCode(box, {
-            text: text,
-            width: 120,
-            height: 120,
-            colorDark: "#020617",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.M
-          });
-        } else {
-          fallbackQR(box, text);
-        }
-      } catch (e) {
-        fallbackQR(box, text);
+        new QRCode(box, {
+          text: urlText,
+          width: 120,
+          height: 120,
+          colorDark: "#020617",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      } catch (err) {
+        box.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(urlText)}" alt="QR Code" class="w-[120px] h-[120px] rounded-lg">`;
       }
     }
 
-    function fallbackQR(box, text) {
-      box.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(text)}" alt="QR Code" class="w-[120px] h-[120px] rounded-lg">`;
-    }
-
     function copyInviteLink(mode) {
-      const code = (mode === 'duel') ? duelState.roomId : multiState.roomId;
-      if (!code) return;
+      const roomId = mode === 'duel' ? duelState.roomId : multiState.roomId;
+      if (!roomId) return;
       const url = new URL(window.location.href);
       url.searchParams.set('mode', mode);
-      url.searchParams.set('room', code);
-
-      const tempInput = document.createElement('textarea');
-      tempInput.value = url.toString();
-      document.body.appendChild(tempInput);
-      tempInput.select();
+      url.searchParams.set('room', roomId);
+      
+      const dummy = document.createElement('input');
+      document.body.appendChild(dummy);
+      dummy.value = url.toString();
+      dummy.select();
       document.execCommand('copy');
-      document.body.removeChild(tempInput);
-      showToast("已複製專屬連線網址！", "success");
+      document.body.removeChild(dummy);
+      showToast("已複製專屬連線邀請網址！");
     }
 
     window.checkAutoJoinURL = function() {
       const params = new URLSearchParams(window.location.search);
       const mode = params.get('mode');
       const room = params.get('room');
+
       if (mode && room && /^\d{4}$/.test(room)) {
         if (mode === 'duel') {
           switchMode('duel');
-          const input = document.getElementById('duel-code-input');
-          if (input) input.value = room;
-          showToast(`已透過 QR 碼帶入雙人房間: ${room}`, "success");
+          document.getElementById('duel-code-input').value = room;
+          showToast(`已自動帶入雙人房間代碼: ${room}，點擊加入即可！`);
         } else if (mode === 'multi') {
           switchMode('multi');
-          const input = document.getElementById('multi-code-input');
-          if (input) input.value = room;
-          showToast(`已透過 QR 碼帶入多人房間: ${room}`, "success");
+          document.getElementById('multi-code-input').value = room;
+          showToast(`已自動帶入派對房間代碼: ${room}，點擊加入即可！`);
         }
       }
     };
 
-    window.addEventListener('DOMContentLoaded', () => {
-      if (typeof window.checkAutoJoinURL === 'function') {
-        window.checkAutoJoinURL();
-      }
-    });
-
-    /* ==========================================================================
-       1. 個人模式邏輯 (支援開始按鈕、草稿筆記、計時、結算)
-       ========================================================================== */
-    let singleState = {
-      isPlaying: false,
-      secret: '',
-      guess: '',
-      history: [],
-      notes: Array(10).fill('normal'),
-      timerId: null,
-      startTime: 0
-    };
-
+    /* ============================================================
+       1. 個人闖關模式邏輯
+       ============================================================ */
     function startSingleGame() {
       clearInterval(singleState.timerId);
       singleState.isPlaying = true;
-      singleState.secret = generateRandomSecret(digitCount);
-      singleState.guess = '';
+      singleState.secret = generateSecretNum(digitCount);
+      singleState.currentInput = '';
       singleState.history = [];
-      singleState.notes = Array(10).fill('normal');
       singleState.startTime = Date.now();
+      singleState.notes = Array(10).fill('normal');
 
       document.getElementById('single-start-view').classList.add('hidden');
       document.getElementById('single-play-view').classList.remove('hidden');
 
-      document.getElementById('single-timer').textContent = '00:00';
-      document.getElementById('single-steps').textContent = '0 次';
-      renderSlots('single-slots-box', '', digitCount);
-      renderSingleHistory();
-
-      for (let i = 0; i <= 9; i++) updateSingleNoteBtn(i);
-
+      document.getElementById('single-timer').innerText = '00:00';
+      document.getElementById('single-steps').innerText = '0 次';
       singleState.timerId = setInterval(() => {
-        const sec = Math.floor((Date.now() - singleState.startTime) / 1000);
-        const m = String(Math.floor(sec / 60)).padStart(2, '0');
-        const s = String(sec % 60).padStart(2, '0');
-        document.getElementById('single-timer').textContent = `${m}:${s}`;
+        const elapsed = Math.floor((Date.now() - singleState.startTime) / 1000);
+        const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+        const s = String(elapsed % 60).padStart(2, '0');
+        document.getElementById('single-timer').innerText = `${m}:${s}`;
       }, 1000);
 
-      playSound('click');
-      showToast(`遊戲開始！已生成 ${digitCount} 位不重複數字`);
-    }
-
-    function singleKeyPress(k) {
-      if (!singleState.isPlaying) return;
-      if (singleState.guess.length >= digitCount) return;
-      if (singleState.guess.includes(k)) {
-        playSound('error');
-        showToast(`數字 ${k} 不可重複輸入！`, 'error');
-        return;
-      }
-      singleState.guess += k;
-      renderSlots('single-slots-box', singleState.guess, digitCount);
-      playSound('click');
-    }
-
-    function singleKeyBack() {
-      if (!singleState.isPlaying || singleState.guess.length === 0) return;
-      singleState.guess = singleState.guess.slice(0, -1);
-      renderSlots('single-slots-box', singleState.guess, digitCount);
-      playSound('delete');
-    }
-
-    function submitSingleGuess() {
-      if (!singleState.isPlaying) return;
-      if (singleState.guess.length !== digitCount) {
-        playSound('error');
-        showToast(`請輸入滿 ${digitCount} 位數！`, 'error');
-        return;
-      }
-
-      const res = calcAB(singleState.guess, singleState.secret);
-      singleState.history.unshift({
-        guess: singleState.guess,
-        a: res.a,
-        b: res.b,
-        step: singleState.history.length + 1
-      });
-
-      singleState.guess = '';
-      renderSlots('single-slots-box', '', digitCount);
+      for (let i = 0; i <= 9; i++) renderSingleNoteBtn(i);
       renderSingleHistory();
-      document.getElementById('single-steps').textContent = `${singleState.history.length} 次`;
-
-      if (res.a === digitCount) {
-        clearInterval(singleState.timerId);
-        playSound('win');
-        openWinModal("恭喜破譯完成！", `您以 ${singleState.history.length} 步成功解開答案`, singleState.secret);
-      } else {
-        playSound('clue');
-      }
+      updateSlotDisplay('single-slots-box', '');
+      playSound('tap');
+      showToast(`遊戲開始！已出好 ${digitCount} 位不重複數字`);
     }
 
     function toggleSingleNote(num) {
@@ -968,17 +952,17 @@
       if (cur === 'normal') singleState.notes[num] = 'correct';
       else if (cur === 'correct') singleState.notes[num] = 'wrong';
       else singleState.notes[num] = 'normal';
-      updateSingleNoteBtn(num);
-      playSound('click');
+
+      renderSingleNoteBtn(num);
+      playSound('tap');
     }
 
-    function updateSingleNoteBtn(num) {
+    function renderSingleNoteBtn(num) {
       const btn = document.getElementById(`snote-${num}`);
-      if (!btn) return;
       const state = singleState.notes[num];
       if (state === 'correct') {
         btn.className = "h-9 rounded-xl bg-emerald-500/20 border-2 border-emerald-500 text-emerald-400 font-bold text-sm flex items-center justify-center";
-        btn.innerHTML = `${num}<i class="fa-solid fa-check text-[9px] ml-0.5"></i>`;
+        btn.innerHTML = `${num}<i class="fa-solid fa-check text-[8px] ml-0.5"></i>`;
       } else if (state === 'wrong') {
         btn.className = "h-9 rounded-xl bg-slate-900 border border-slate-800 text-slate-600 line-through font-bold text-sm flex items-center justify-center opacity-40";
         btn.innerHTML = `${num}`;
@@ -988,24 +972,68 @@
       }
     }
 
+    function singleKeyPress(key) {
+      if (!singleState.isPlaying) return;
+      if (singleState.currentInput.length >= digitCount) return;
+      if (singleState.currentInput.includes(key)) {
+        showToast("數字不可重複！", "error");
+        playSound('error');
+        return;
+      }
+      singleState.currentInput += key;
+      playSound('tap');
+      updateSlotDisplay('single-slots-box', singleState.currentInput);
+    }
+
+    function singleKeyBack() {
+      if (!singleState.isPlaying || singleState.currentInput.length === 0) return;
+      singleState.currentInput = singleState.currentInput.slice(0, -1);
+      playSound('back');
+      updateSlotDisplay('single-slots-box', singleState.currentInput);
+    }
+
+    function submitSingleGuess() {
+      if (!singleState.isPlaying) return;
+      if (singleState.currentInput.length !== digitCount) {
+        showToast(`請輸入滿 ${digitCount} 位數！`, "error");
+        playSound('error');
+        return;
+      }
+
+      const guess = singleState.currentInput;
+      const { a, b } = calculate1A2B(guess, singleState.secret);
+      singleState.history.unshift({ guess, a, b, step: singleState.history.length + 1 });
+      singleState.currentInput = '';
+      updateSlotDisplay('single-slots-box', '');
+      renderSingleHistory();
+      document.getElementById('single-steps').innerText = `${singleState.history.length} 次`;
+
+      if (a === digitCount) {
+        clearInterval(singleState.timerId);
+        playSound('win');
+        openWinModal("恭喜破譯完成！", `您以 ${singleState.history.length} 步成功解開謎底！`, singleState.secret);
+      } else {
+        playSound('guess');
+      }
+    }
+
     function renderSingleHistory() {
       const list = document.getElementById('single-history-list');
       const count = document.getElementById('single-history-count');
-      if (!list) return;
+      count.innerText = `${singleState.history.length} 次記錄`;
 
-      count.textContent = `${singleState.history.length} 次記錄`;
       if (singleState.history.length === 0) {
-        list.innerHTML = `<div class="h-full flex items-center justify-center text-slate-500 text-xs">尚未有猜測記錄</div>`;
+        list.innerHTML = `<div class="h-full flex items-center justify-center text-slate-500 text-xs">尚未有猜測紀錄</div>`;
         return;
       }
 
       list.innerHTML = singleState.history.map(item => `
-        <div class="p-2.5 rounded-2xl bg-slate-800/80 border border-slate-700/80 flex items-center justify-between">
+        <div class="p-2.5 rounded-2xl bg-slate-800/80 border border-slate-700/80 flex items-center justify-between text-xs">
           <div class="flex items-center gap-2.5">
-            <span class="w-6 h-6 rounded-lg bg-slate-900 text-slate-400 font-digital text-xs flex items-center justify-center font-bold">#${item.step}</span>
-            <span class="font-digital text-lg font-bold text-white tracking-widest">${item.guess}</span>
+            <span class="w-6 h-6 rounded-lg bg-slate-900 text-slate-400 font-digital flex items-center justify-center font-bold">#${item.step}</span>
+            <span class="font-digital text-base font-bold text-white tracking-widest">${item.guess}</span>
           </div>
-          <div class="flex gap-1.5 font-digital text-xs font-black">
+          <div class="flex gap-1.5 font-digital font-bold">
             <span class="px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">${item.a}A</span>
             <span class="px-2 py-0.5 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30">${item.b}B</span>
           </div>
@@ -1017,1153 +1045,893 @@
       if (!singleState.isPlaying) return;
       clearInterval(singleState.timerId);
       singleState.isPlaying = false;
-      openWinModal("本局已放棄", "謎底密碼正式揭曉", singleState.secret);
+      openWinModal("本局已揭曉", "挑戰未完成，再接再厲！", singleState.secret);
     }
 
-    /* ==========================================================================
-       2. 雙人對決邏輯 (Firestore 跨平板 1v1 對戰)
-       ========================================================================== */
-    let duelState = {
-      roomId: '',
-      role: '', // 'p1' 或 'p2'
-      sessionToken: 'client_' + Math.random().toString(36).substring(2, 9),
-      myName: '',
-      mySecret: '',
-      guess: '',
-      unsub: null,
-      hasEnded: false
-    };
-
-    function generate4DigitCode() {
-      return Math.floor(1000 + Math.random() * 9000).toString();
-    }
-
+    /* ============================================================
+       2. 雙人對決邏輯 (毫秒級雙向同步與公平回合)
+       ============================================================ */
     async function createDuelRoom() {
-      if (!window.FB || !window.FB.isReady || !window.FB.user) {
-        showToast("Firebase 尚未連線，請檢查網路！", "error");
+      if (!window.FB_SYSTEM || !window.FB_SYSTEM.currentUser) {
+        showToast("Firebase 連線未就緒，請稍候！", "error");
         return;
       }
       const pName = document.getElementById('duel-name-input').value.trim() || '學生';
-      const code = generate4DigitCode();
-      const { db, doc, setDoc, user } = window.FB;
+      const code = generate4Code();
+      const { db, doc, setDoc, currentUser } = window.FB_SYSTEM;
 
       duelState.roomId = code;
-      duelState.role = 'p1';
+      duelState.myRole = 'p1';
       duelState.myName = pName;
       duelState.mySecret = '';
-      duelState.guess = '';
+      duelState.currentInput = '';
+      duelState.lastData = null;
+      duelState.isSubmitting = false;
 
       const roomData = {
         roomId: code,
         digitCount,
         status: 'waiting',
-        turn: 'p1',
-        p1PendingWin: false,
-        p1: { uid: user.uid, sessionToken: duelState.sessionToken, name: pName, secret: '', ready: false, history: [] },
+        p1: { uid: currentUser.uid, name: pName, secret: '', ready: false, guesses: [] },
         p2: null,
+        currentTurn: 'p1',
+        p1PendingWin: false,
         winner: null,
         updatedAt: Date.now()
       };
 
       try {
         await setDoc(doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", code), roomData);
-        
         document.getElementById('duel-lobby-card').classList.add('hidden');
         document.getElementById('duel-waiting-card').classList.remove('hidden');
-        document.getElementById('duel-display-code').textContent = code;
+        document.getElementById('duel-display-code').innerText = code;
 
-        // 繪製 QR Code
-        const inviteURL = new URL(window.location.href);
-        inviteURL.searchParams.set('mode', 'duel');
-        inviteURL.searchParams.set('room', code);
-        drawQRCode('duel-qrcode-box', inviteURL.toString());
+        const url = new URL(window.location.href);
+        url.searchParams.set('mode', 'duel');
+        url.searchParams.set('room', code);
+        renderQRCodeHelper('duel-qrcode-box', url.toString());
 
         listenDuelRoom(code);
-        playSound('click');
-        showToast(`雙人房間已建立，代碼：${code}`);
-      } catch (e) {
-        showToast("開房失敗：" + e.message, "error");
+        showToast(`已建立房間 ${code}！`);
+      } catch (err) {
+        showToast("建立房間失敗: " + err.message, "error");
       }
     }
 
     async function joinDuelRoom() {
-      if (!window.FB || !window.FB.isReady || !window.FB.user) {
-        showToast("Firebase 尚未連線，請檢查網路！", "error");
+      if (!window.FB_SYSTEM || !window.FB_SYSTEM.currentUser) {
+        showToast("Firebase 連線未就緒！", "error");
         return;
       }
       const code = document.getElementById('duel-code-input').value.trim();
+      const pName = document.getElementById('duel-name-input').value.trim() || '學生';
       if (!/^\d{4}$/.test(code)) {
-        showToast("請輸入完整的 4 位純數字代碼！", "error");
+        showToast("請輸入 4 位純數字代碼！", "error");
         return;
       }
-      const pName = document.getElementById('duel-name-input').value.trim() || '學生';
-      const { db, doc, getDoc, updateDoc, user } = window.FB;
-      const roomRef = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", code);
 
-      try {
-        const snap = await getDoc(roomRef);
-        if (!snap.exists()) {
-          showToast("找不到此房間，請確認代碼！", "error");
-          return;
-        }
-        const data = snap.data();
-        if (data.p2 && data.p2.sessionToken && data.p2.sessionToken !== duelState.sessionToken) {
-          showToast("此房間已有挑戰者加入！", "error");
-          return;
-        }
+      const { db, doc, getDoc, updateDoc, currentUser } = window.FB_SYSTEM;
+      const ref = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", code);
+      const snap = await getDoc(ref);
 
-        duelState.roomId = code;
-        duelState.role = 'p2';
-        duelState.myName = pName;
-        duelState.mySecret = '';
-        duelState.guess = '';
-        digitCount = data.digitCount || digitCount;
-
-        await updateDoc(roomRef, {
-          p2: { uid: user.uid, sessionToken: duelState.sessionToken, name: pName, secret: '', ready: false, history: [] },
-          status: 'setup',
-          updatedAt: Date.now()
-        });
-
-        listenDuelRoom(code);
-        playSound('click');
-        showToast(`成功加入房間 ${code}！`);
-      } catch (e) {
-        showToast("加入失敗：" + e.message, "error");
+      if (!snap.exists()) {
+        showToast("查無此房間代碼！", "error");
+        return;
       }
+      const data = snap.data();
+      if (data.status === 'closed') {
+        showToast("此房間已被關閉！", "error");
+        return;
+      }
+      if (data.p2 && data.p2.uid !== currentUser.uid) {
+        showToast("房間已有挑戰者加入！", "error");
+        return;
+      }
+
+      duelState.roomId = code;
+      duelState.myRole = 'p2';
+      duelState.myName = pName;
+      duelState.mySecret = '';
+      duelState.currentInput = '';
+      duelState.lastData = null;
+      duelState.isSubmitting = false;
+      digitCount = data.digitCount || 4;
+
+      await updateDoc(ref, {
+        p2: { uid: currentUser.uid, name: pName, secret: '', ready: false, guesses: [] },
+        status: 'setup',
+        updatedAt: Date.now()
+      });
+
+      listenDuelRoom(code);
+      showToast(`成功加入對戰房間 ${code}！`);
     }
 
     function listenDuelRoom(code) {
-      if (duelState.unsub) duelState.unsub();
-      const { db, doc, onSnapshot, updateDoc } = window.FB;
-      const roomRef = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", code);
+      if (duelState.unsubscribe) duelState.unsubscribe();
+      const { db, doc, onSnapshot, currentUser } = window.FB_SYSTEM;
+      const ref = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", code);
 
-      duelState.unsub = onSnapshot(roomRef, (snap) => {
+      duelState.unsubscribe = onSnapshot(ref, (snap) => {
         if (!snap.exists()) {
-          showToast("房間已被關閉", "info");
+          showToast("房間已被解除！");
           leaveDuelLocal();
           return;
         }
         const data = snap.data();
+        duelState.lastData = data;
 
-        // 偵測到任一方已關閉房間，立刻連動退出秘密出題或對戰畫面
         if (data.status === 'closed') {
-          showToast(`【${data.closedBy || '對手'}】已關閉/離開房間！`, "info");
+          showToast(`對手已離開或關閉房間！`);
           leaveDuelLocal();
           return;
         }
 
-        digitCount = data.digitCount || digitCount;
+        if (data.p1?.uid === currentUser.uid) duelState.myRole = 'p1';
+        else if (data.p2?.uid === currentUser.uid) duelState.myRole = 'p2';
 
-        // 依據專屬 sessionToken 精準確認本機角色，即使同瀏覽器測試也絕不撞車
-        if (data.p1 && data.p1.sessionToken === duelState.sessionToken) {
-          duelState.role = 'p1';
-        } else if (data.p2 && data.p2.sessionToken === duelState.sessionToken) {
-          duelState.role = 'p2';
-        }
-
-        // 1. 優先檢查是否已分出勝負或結束戰局
-        if (data.status === 'finished' || data.winner) {
-          document.getElementById('duel-lobby-card').classList.add('hidden');
-          document.getElementById('duel-waiting-card').classList.add('hidden');
-          document.getElementById('duel-secret-card').classList.add('hidden');
-          document.getElementById('duel-arena-card').classList.remove('hidden');
+        // 結算判定
+        if (data.winner || data.status === 'finished') {
           renderDuelArena(data);
           handleDuelWinner(data);
           return;
         }
 
-        // 更新出題狀態燈號
-        updateDuelReadyIndicator(data);
-
-        const isP1Ready = !!(data.p1 && data.p1.ready);
-        const isP2Ready = !!(data.p2 && data.p2.ready);
-        const bothReady = isP1Ready && isP2Ready;
-
-        // 雙方皆鎖定出題後，兩端平板（包含對手）100% 同步切換進對戰戰局
-        if (bothReady || data.status === 'playing') {
-          if (data.status !== 'playing' && data.status !== 'finished') {
-            updateDoc(roomRef, { status: 'playing', updatedAt: Date.now() }).catch(() => {});
-          }
-          document.getElementById('duel-lobby-card').classList.add('hidden');
-          document.getElementById('duel-waiting-card').classList.add('hidden');
-          document.getElementById('duel-secret-card').classList.add('hidden');
-          document.getElementById('duel-arena-card').classList.remove('hidden');
-          renderDuelArena(data);
+        // 出題階段
+        if (data.status === 'setup' || (data.p1 && data.p2 && data.status === 'waiting')) {
+          renderDuelSecretView(data);
           return;
         }
 
-        // 等待出題階段 (包含再比一次時重回出題階段)
-        if (data.status === 'setup') {
-          duelState.hasEnded = false;
-          document.getElementById('duel-lobby-card').classList.add('hidden');
-          document.getElementById('duel-waiting-card').classList.add('hidden');
-          document.getElementById('duel-arena-card').classList.add('hidden');
-          document.getElementById('duel-secret-card').classList.remove('hidden');
-
-          const myObj = (duelState.role === 'p1') ? data.p1 : data.p2;
-          if (!myObj?.ready) {
-            document.getElementById('btn-lock-duel-secret').classList.remove('hidden');
-            document.getElementById('duel-secret-notice').classList.add('hidden');
-          }
-          renderSlots('duel-secret-slots', duelState.mySecret, digitCount);
+        // 正式開戰
+        if (data.status === 'playing') {
+          renderDuelArena(data);
         }
       }, (err) => {
-        console.error("雙人監聽錯誤:", err);
+        console.error("Duel listener error:", err);
       });
     }
 
-    function updateDuelReadyIndicator(data) {
+    function renderDuelSecretView(data) {
+      document.getElementById('duel-lobby-card').classList.add('hidden');
+      document.getElementById('duel-waiting-card').classList.add('hidden');
+      document.getElementById('duel-arena-card').classList.add('hidden');
+      document.getElementById('duel-secret-card').classList.remove('hidden');
+
+      const isP1 = duelState.myRole === 'p1';
+      const myObj = isP1 ? data.p1 : data.p2;
+      const oppObj = isP1 ? data.p2 : data.p1;
+
       const myDot = document.getElementById('duel-my-ready-dot');
       const myText = document.getElementById('duel-my-ready-text');
-      const oppDot = document.getElementById('duel-opp-ready-dot');
-      const oppText = document.getElementById('duel-opp-ready-text');
-      if (!myDot || !oppDot) return;
-
-      const myObj = (duelState.role === 'p1') ? data.p1 : data.p2;
-      const oppObj = (duelState.role === 'p1') ? data.p2 : data.p1;
-      const oppName = oppObj?.name || '對手';
-
       if (myObj?.ready) {
         myDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400";
-        myText.innerHTML = `我方：已鎖定 ✔`;
-        myText.className = "text-emerald-400 font-bold truncate";
+        myText.innerText = "我方：已鎖定 ✔";
+        myText.className = "text-emerald-400 truncate font-bold";
+        document.getElementById('btn-lock-duel-secret').classList.add('hidden');
+        document.getElementById('duel-secret-notice').classList.remove('hidden');
       } else {
         myDot.className = "w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse";
-        myText.innerHTML = `我方：出題中...`;
+        myText.innerText = "我方：出題中...";
         myText.className = "text-amber-400 truncate";
+        document.getElementById('btn-lock-duel-secret').classList.remove('hidden');
+        document.getElementById('duel-secret-notice').classList.add('hidden');
       }
 
+      const oppDot = document.getElementById('duel-opp-ready-dot');
+      const oppText = document.getElementById('duel-opp-ready-text');
       if (oppObj?.ready) {
         oppDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400";
-        oppText.innerHTML = `${oppName}：已鎖定 ✔`;
-        oppText.className = "text-emerald-400 font-bold truncate";
+        oppText.innerText = `對手 (${oppObj.name || '學生'})：已鎖定 ✔`;
+        oppText.className = "text-emerald-400 truncate font-bold";
       } else {
         oppDot.className = "w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse";
-        oppText.innerHTML = `${oppName}：出題中...`;
+        oppText.innerText = `對手 (${oppObj?.name || '學生'})：出題中...`;
         oppText.className = "text-amber-400 truncate";
+      }
+
+      updateSlotDisplay('duel-secret-slots', duelState.mySecret);
+
+      // 雙方出題皆完成，由 P1 統一觸發切換為 playing
+      if (data.p1?.ready && data.p2?.ready && isP1) {
+        const { db, doc, updateDoc } = window.FB_SYSTEM;
+        updateDoc(doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", data.roomId), {
+          status: 'playing',
+          updatedAt: Date.now()
+        });
       }
     }
 
     function duelSecretPress(k) {
       if (duelState.mySecret.length >= digitCount) return;
       if (duelState.mySecret.includes(k)) {
+        showToast("數字不可重複！", "error");
         playSound('error');
-        showToast(`出題數字 ${k} 不可重複！`, "error");
         return;
       }
       duelState.mySecret += k;
-      renderSlots('duel-secret-slots', duelState.mySecret, digitCount);
-      playSound('click');
+      playSound('tap');
+      updateSlotDisplay('duel-secret-slots', duelState.mySecret);
     }
 
     function randomDuelSecret() {
-      duelState.mySecret = generateRandomSecret(digitCount);
-      renderSlots('duel-secret-slots', duelState.mySecret, digitCount);
-      playSound('click');
+      duelState.mySecret = generateSecretNum(digitCount);
+      playSound('tap');
+      updateSlotDisplay('duel-secret-slots', duelState.mySecret);
     }
 
     function clearDuelSecret() {
       duelState.mySecret = '';
-      renderSlots('duel-secret-slots', '', digitCount);
-      playSound('delete');
+      playSound('back');
+      updateSlotDisplay('duel-secret-slots', '');
     }
 
     async function lockDuelSecret() {
       if (duelState.mySecret.length !== digitCount) {
+        showToast(`密碼必須為 ${digitCount} 位！`, "error");
         playSound('error');
-        showToast(`出題密碼必須為 ${digitCount} 位！`, "error");
         return;
       }
-      const { db, doc, getDoc, updateDoc } = window.FB;
-      const roomRef = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", duelState.roomId);
+      const { db, doc, updateDoc } = window.FB_SYSTEM;
+      const ref = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", duelState.roomId);
+      const isP1 = duelState.myRole === 'p1';
 
-      document.getElementById('btn-lock-duel-secret').classList.add('hidden');
-      document.getElementById('duel-secret-notice').classList.remove('hidden');
-
-      try {
-        const snap = await getDoc(roomRef);
-        if (!snap.exists()) return;
-        const data = snap.data();
-
-        const updatePayload = {};
-        if (duelState.role === 'p1') {
-          updatePayload['p1.secret'] = duelState.mySecret;
-          updatePayload['p1.ready'] = true;
-          if (data.p2 && data.p2.ready) updatePayload.status = 'playing';
-        } else {
-          updatePayload['p2.secret'] = duelState.mySecret;
-          updatePayload['p2.ready'] = true;
-          if (data.p1 && data.p1.ready) updatePayload.status = 'playing';
-        }
-        updatePayload.updatedAt = Date.now();
-
-        await updateDoc(roomRef, updatePayload);
-        playSound('click');
-        showToast("密碼已鎖定！等待對手出題完成即可開戰");
-      } catch (err) {
-        document.getElementById('btn-lock-duel-secret').classList.remove('hidden');
-        document.getElementById('duel-secret-notice').classList.add('hidden');
-        showToast("鎖定失敗，請重試：" + err.message, "error");
-      }
+      await updateDoc(ref, {
+        [isP1 ? 'p1.secret' : 'p2.secret']: duelState.mySecret,
+        [isP1 ? 'p1.ready' : 'p2.ready']: true,
+        updatedAt: Date.now()
+      });
+      playSound('tap');
+      showToast("你的出題密碼已鎖定！");
     }
 
     function renderDuelArena(data) {
-      document.getElementById('duel-arena-room-tag').textContent = data.roomId;
-      
-      const myName = (duelState.role === 'p1') ? data.p1?.name : data.p2?.name;
-      const oppName = (duelState.role === 'p1') ? data.p2?.name : data.p1?.name;
+      document.getElementById('duel-secret-card').classList.add('hidden');
+      document.getElementById('duel-arena-card').classList.remove('hidden');
+      document.getElementById('duel-arena-room-tag').innerText = data.roomId;
 
-      document.getElementById('duel-title-p1').textContent = `${myName || '學生'} (我方)`;
-      document.getElementById('duel-title-p2').textContent = `${oppName || '學生'} (對手)`;
+      const isP1 = duelState.myRole === 'p1';
+      const myObj = isP1 ? data.p1 : data.p2;
+      const oppObj = isP1 ? data.p2 : data.p1;
+      const isMyTurn = data.currentTurn === duelState.myRole;
 
-      const isMyTurn = (data.turn === duelState.role);
-      const lockOverlay = document.getElementById('duel-lock-overlay');
-      const lockIcon = document.getElementById('duel-lock-icon');
-      const lockText = document.getElementById('duel-lock-text');
-      const endActions = document.getElementById('duel-end-actions');
+      document.getElementById('duel-title-p1').innerText = `${myObj?.name || '我方'} (我方)`;
+      document.getElementById('duel-title-p2').innerText = `${oppObj?.name || '對手'} (對手)`;
+
       const badge = document.getElementById('duel-turn-badge');
+      const overlay = document.getElementById('duel-lock-overlay');
+      const lockText = document.getElementById('duel-lock-text');
+      const lockIcon = document.getElementById('duel-lock-icon');
+      const endActions = document.getElementById('duel-end-actions');
 
-      // 檢查先手是否已達成 4A，等待後手最後一次追平機會
-      const isP1Pending = !!(data.p1PendingWin && data.status !== 'finished');
-
-      if (data.status === 'finished' || data.winner) {
-        lockOverlay.classList.remove('hidden');
-        if (lockIcon) {
-          lockIcon.className = "fa-solid fa-trophy text-3xl text-amber-400 mb-2"; // 取消轉動漏斗，改為獎盃
-        }
-        if (lockText) {
-          lockText.textContent = "戰局已結算完成！";
-        }
-        if (endActions) {
-          endActions.classList.remove('hidden'); // 顯示再比一次與關閉房間按鈕
-        }
-        badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30";
-        badge.textContent = "🏆 戰局結束";
+      if (data.status === 'finished') {
+        overlay.classList.remove('hidden');
+        lockIcon.className = "fa-solid fa-trophy text-4xl text-amber-400 mb-2";
+        lockText.innerText = "戰局已結算完成！";
+        endActions.classList.remove('hidden');
+        badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40";
+        badge.innerText = "🏆 戰局結束";
       } else {
-        if (endActions) endActions.classList.add('hidden');
-        if (lockIcon) lockIcon.className = "fa-solid fa-hourglass-half text-3xl text-amber-400 animate-spin mb-2";
-
-        if (isP1Pending) {
-          if (duelState.role === 'p2') {
-            lockOverlay.classList.add('hidden');
-            badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-rose-500/20 text-rose-400 border border-rose-500/40 animate-pulse";
-            badge.textContent = "🔥 對手已破譯！這是你的最後機會，猜中即可絕平！";
+        endActions.classList.add('hidden');
+        if (isMyTurn) {
+          overlay.classList.add('hidden');
+          if (data.p1PendingWin && !isP1) {
+            badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40 animate-pulse";
+            badge.innerText = "🔥 絕平機會！最後一擊";
           } else {
-            lockOverlay.classList.remove('hidden');
-            if (lockText) lockText.textContent = `你已破譯成功！等待對手【${oppName || '學生'}】最後一擊追平...`;
-            badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30";
-            badge.textContent = `⏳ 你已達成！等待對手最後追平...`;
+            badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+            badge.innerText = "輪到你猜測！";
           }
-        } else if (isMyTurn) {
-          lockOverlay.classList.add('hidden');
-          badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
-          badge.textContent = "🎯 輪到你猜測！請輸入破譯數字";
         } else {
-          lockOverlay.classList.remove('hidden');
-          if (lockText) lockText.textContent = `對手【${oppName || '學生'}】思考猜測中...`;
+          overlay.classList.remove('hidden');
+          lockIcon.className = "fa-solid fa-hourglass-half text-3xl text-amber-400 animate-spin mb-2";
+          lockText.innerText = data.p1PendingWin && isP1 
+            ? "你已破譯成功！等待對手最後反擊..." 
+            : `等待【${oppObj?.name || '對手'}】思考中...`;
           badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30";
-          badge.textContent = `⏳ 等待【${oppName || '學生'}】思考猜測中...`;
+          badge.innerText = "對手思考中";
         }
       }
 
-      renderSlots('duel-guess-slots', duelState.guess, digitCount);
-      renderDuelHistories(data);
+      updateSlotDisplay('duel-guess-slots', duelState.currentInput);
+      renderDuelHistories(myObj?.guesses || [], oppObj?.guesses || []);
+    }
+
+    function renderDuelHistories(myList, oppList) {
+      const p1Box = document.getElementById('duel-history-p1');
+      const p2Box = document.getElementById('duel-history-p2');
+
+      const render = (arr) => arr.map(item => `
+        <div class="p-2 rounded-xl bg-slate-800 border border-slate-700/80 flex items-center justify-between text-xs">
+          <span class="font-digital font-bold text-white">${item.guess}</span>
+          <div class="flex gap-1 font-digital font-bold">
+            <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">${item.a}A</span>
+            <span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400">${item.b}B</span>
+          </div>
+        </div>
+      `).join('');
+
+      p1Box.innerHTML = render(myList);
+      p2Box.innerHTML = render(oppList);
     }
 
     function duelKeyPress(k) {
-      if (duelState.hasEnded) return;
-      // 非自己回合時禁止輸入
-      const overlay = document.getElementById('duel-lock-overlay');
-      if (overlay && !overlay.classList.contains('hidden')) {
+      if (duelState.currentInput.length >= digitCount) return;
+      if (duelState.currentInput.includes(k)) {
+        showToast("數字不可重複！", "error");
         playSound('error');
-        showToast("現在是對手回合，請稍候！", 'error');
         return;
       }
-      if (duelState.guess.length >= digitCount) return;
-      if (duelState.guess.includes(k)) {
-        playSound('error');
-        showToast(`數字 ${k} 不可重複輸入！`, 'error');
-        return;
-      }
-      duelState.guess += k;
-      renderSlots('duel-guess-slots', duelState.guess, digitCount);
-      playSound('click');
+      duelState.currentInput += k;
+      playSound('tap');
+      updateSlotDisplay('duel-guess-slots', duelState.currentInput);
     }
 
     function duelKeyBack() {
-      const overlay = document.getElementById('duel-lock-overlay');
-      if (overlay && !overlay.classList.contains('hidden')) return;
-      if (duelState.guess.length === 0) return;
-      duelState.guess = duelState.guess.slice(0, -1);
-      renderSlots('duel-guess-slots', duelState.guess, digitCount);
-      playSound('delete');
+      if (duelState.currentInput.length === 0) return;
+      duelState.currentInput = duelState.currentInput.slice(0, -1);
+      playSound('back');
+      updateSlotDisplay('duel-guess-slots', duelState.currentInput);
     }
 
     async function submitDuelGuess() {
-      if (duelState.hasEnded) return;
-      const overlay = document.getElementById('duel-lock-overlay');
-      if (overlay && !overlay.classList.contains('hidden')) {
-        showToast("尚未輪到你的回合！", "error");
-        return;
-      }
-      if (duelState.guess.length !== digitCount) {
+      if (duelState.isSubmitting) return;
+      if (duelState.currentInput.length !== digitCount) {
+        showToast(`請輸入滿 ${digitCount} 位數！`, "error");
         playSound('error');
-        showToast(`請輸入滿 ${digitCount} 位數！`, 'error');
-        return;
-      }
-      const { db, doc, getDoc, updateDoc } = window.FB;
-      const roomRef = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", duelState.roomId);
-      const snap = await getDoc(roomRef);
-      if (!snap.exists()) return;
-      const data = snap.data();
-
-      if (data.status === 'finished' || data.winner) {
-        showToast("本局戰況已結束！", "info");
         return;
       }
 
-      if (data.turn !== duelState.role) {
+      const data = duelState.lastData;
+      if (!data || data.status !== 'playing' || data.currentTurn !== duelState.myRole) {
         showToast("尚未輪到你的回合！", "error");
         return;
       }
 
-      const targetSecret = (duelState.role === 'p1') ? data.p2.secret : data.p1.secret;
-      const res = calcAB(duelState.guess, targetSecret);
+      duelState.isSubmitting = true;
+      const isP1 = duelState.myRole === 'p1';
+      const targetSecret = isP1 ? data.p2?.secret : data.p1?.secret;
+      const guess = duelState.currentInput;
+      const { a, b } = calculate1A2B(guess, targetSecret);
 
-      const item = { guess: duelState.guess, a: res.a, b: res.b, time: Date.now() };
-      const nextTurn = (duelState.role === 'p1') ? 'p2' : 'p1';
+      const isWin = (a === digitCount);
+      const guessItem = { guess, a, b, time: Date.now() };
 
-      const updatePayload = { turn: nextTurn, updatedAt: Date.now() };
-      if (duelState.role === 'p1') {
-        updatePayload['p1.history'] = [item, ...(data.p1?.history || [])];
-      } else {
-        updatePayload['p2.history'] = [item, ...(data.p2?.history || [])];
-      }
+      const { db, doc, updateDoc, arrayUnion } = window.FB_SYSTEM;
+      const ref = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", data.roomId);
 
-      // 公平回合規則判斷 (Equal Turn Rule)
-      if (duelState.role === 'p1') {
-        // 先手回合
-        if (res.a === digitCount) {
-          // 先手猜中了！保留給後手最後一次追平機會，暫不結束遊戲
-          updatePayload.p1PendingWin = true;
-        }
-      } else {
-        // 後手回合 (p2)
-        const p1AlreadySolved = !!data.p1PendingWin;
-        if (p1AlreadySolved) {
-          if (res.a === digitCount) {
-            // 後手也猜中 => 雙方平手！
-            updatePayload.winner = 'draw';
-          } else {
-            // 後手沒猜中 => 先手獲勝！
-            updatePayload.winner = 'p1';
-          }
-          updatePayload.status = 'finished';
-        } else {
-          // 先手先前未猜中
-          if (res.a === digitCount) {
-            // 後手在同等步數下率先破譯 => 後手獲勝！
-            updatePayload.winner = 'p2';
-            updatePayload.status = 'finished';
-          }
-        }
-      }
-
-      duelState.guess = '';
-      renderSlots('duel-guess-slots', '', digitCount);
-      await updateDoc(roomRef, updatePayload);
-
-      playSound(res.a === digitCount ? 'win' : 'clue');
-    }
-
-    function renderDuelHistories(data) {
-      const render = (arr, id) => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        if (!arr || arr.length === 0) {
-          el.innerHTML = `<div class="text-slate-500 text-xs text-center py-8">尚無記錄</div>`;
-          return;
-        }
-        el.innerHTML = arr.map(h => `
-          <div class="p-2 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-between text-xs">
-            <span class="font-digital font-bold text-white">${h.guess}</span>
-            <span class="font-digital font-black text-indigo-300">${h.a}A${h.b}B</span>
-          </div>
-        `).join('');
+      const updatePayload = {
+        [isP1 ? 'p1.guesses' : 'p2.guesses']: arrayUnion(guessItem),
+        currentTurn: isP1 ? 'p2' : 'p1',
+        updatedAt: Date.now()
       };
 
-      const myHistory = (duelState.role === 'p1') ? data.p1?.history : data.p2?.history;
-      const oppHistory = (duelState.role === 'p1') ? data.p2?.history : data.p1?.history;
+      if (isP1) {
+        if (isWin) updatePayload.p1PendingWin = true;
+      } else {
+        if (data.p1PendingWin) {
+          updatePayload.status = 'finished';
+          updatePayload.winner = isWin ? 'tie' : 'p1';
+        } else if (isWin) {
+          updatePayload.status = 'finished';
+          updatePayload.winner = 'p2';
+        }
+      }
 
-      render(myHistory, 'duel-history-p1');
-      render(oppHistory, 'duel-history-p2');
+      duelState.currentInput = '';
+      updateSlotDisplay('duel-guess-slots', '');
+
+      try {
+        await updateDoc(ref, updatePayload);
+        playSound(isWin ? 'win' : 'guess');
+      } catch (err) {
+        showToast("送出失敗，請確認網路！", "error");
+      } finally {
+        duelState.isSubmitting = false;
+      }
     }
 
     function handleDuelWinner(data) {
-      if (duelState.hasEnded) return;
-      duelState.hasEnded = true;
+      const winner = data.winner;
+      const isP1 = duelState.myRole === 'p1';
+      let title = "", sub = "";
 
-      const isMe = (data.winner === duelState.role);
-      const isDraw = (data.winner === 'draw');
-      const oppSecret = (duelState.role === 'p1') ? data.p2?.secret : data.p1?.secret;
-      const mySecret = (duelState.role === 'p1') ? data.p1?.secret : data.p2?.secret;
-
-      playSound('win');
-
-      let title = "";
-      let subtitle = "";
-      if (isDraw) {
+      if (winner === 'tie') {
         title = "雙方平手！勢均力敵";
-        subtitle = "兩位同學均破譯了彼此密碼！";
-      } else if (isMe) {
+        sub = "雙方在相同回合均成功破譯對手密碼！";
+      } else if ((winner === 'p1' && isP1) || (winner === 'p2' && !isP1)) {
         title = "你贏了！率先破譯對手密碼";
-        subtitle = "太厲害了，順利完成破解攻防！";
+        sub = "恭喜奪得本局對戰勝利！";
+        playSound('win');
       } else {
-        const winnerName = (data.winner === 'p1') ? data.p1?.name : data.p2?.name;
-        title = `【${winnerName || '學生'}】率先破譯獲勝！`;
-        subtitle = "下局再接再厲奪回榮耀！";
+        const winnerName = winner === 'p1' ? data.p1?.name : data.p2?.name;
+        title = "對手率先破譯！";
+        sub = `由【${winnerName || '對手'}】拿下此局勝利！`;
       }
 
-      openWinModal(
-        title,
-        subtitle,
-        `對手：${oppSecret || '----'} | 我方：${mySecret || '----'}`
-      );
+      const answer = isP1 ? data.p2?.secret : data.p1?.secret;
+      openWinModal(title, sub, answer || '----');
     }
 
     async function restartDuelMatch() {
-      if (!window.FB || !window.FB.isReady || !duelState.roomId) return;
+      if (!duelState.roomId) return;
+      const { db, doc, updateDoc } = window.FB_SYSTEM;
+      const ref = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", duelState.roomId);
+
       closeWinModal();
-      duelState.hasEnded = false;
       duelState.mySecret = '';
-      duelState.guess = '';
+      duelState.currentInput = '';
 
-      const { db, doc, updateDoc } = window.FB;
-      const roomRef = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", duelState.roomId);
-
-      try {
-        await updateDoc(roomRef, {
-          status: 'setup',
-          turn: 'p1',
-          p1PendingWin: false,
-          'p1.secret': '',
-          'p1.ready': false,
-          'p1.history': [],
-          'p2.secret': '',
-          'p2.ready': false,
-          'p2.history': [],
-          winner: null,
-          closedBy: null,
-          updatedAt: Date.now()
-        });
-        showToast("已重設戰局，請雙方重新秘密出題！", "success");
-      } catch (err) {
-        showToast("重啟戰局失敗：" + err.message, "error");
-      }
+      await updateDoc(ref, {
+        status: 'setup',
+        'p1.secret': '',
+        'p1.ready': false,
+        'p1.guesses': [],
+        'p2.secret': '',
+        'p2.ready': false,
+        'p2.guesses': [],
+        currentTurn: 'p1',
+        p1PendingWin: false,
+        winner: null,
+        updatedAt: Date.now()
+      });
+      showToast("已重置戰局，雙方請重新秘密出題！");
     }
 
-    // 本地 UI 清理與重置
-    function leaveDuelLocal() {
-      closeWinModal();
-      if (duelState.unsub) {
-        duelState.unsub();
-        duelState.unsub = null;
+    async function leaveDuel() {
+      if (duelState.roomId && window.FB_SYSTEM) {
+        try {
+          const { db, doc, updateDoc } = window.FB_SYSTEM;
+          await updateDoc(doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", duelState.roomId), {
+            status: 'closed',
+            updatedAt: Date.now()
+          });
+        } catch (e) {}
       }
-      duelState = {
-        roomId: '',
-        role: '',
-        sessionToken: 'client_' + Math.random().toString(36).substring(2, 9),
-        myName: '',
-        mySecret: '',
-        guess: '',
-        unsub: null,
-        hasEnded: false
-      };
+      leaveDuelLocal();
+    }
 
+    function leaveDuelLocal() {
+      if (duelState.unsubscribe) duelState.unsubscribe();
+      duelState = { roomId: null, myRole: null, myName: '學生', mySecret: '', currentInput: '', lastData: null, isSubmitting: false, unsubscribe: null };
+      closeWinModal();
+      document.getElementById('duel-lobby-card').classList.remove('hidden');
       document.getElementById('duel-waiting-card').classList.add('hidden');
       document.getElementById('duel-secret-card').classList.add('hidden');
       document.getElementById('duel-arena-card').classList.add('hidden');
-      document.getElementById('duel-lobby-card').classList.remove('hidden');
-      document.getElementById('btn-lock-duel-secret').classList.remove('hidden');
-      document.getElementById('duel-secret-notice').classList.add('hidden');
     }
 
-    // 主動關閉/退出房間（通知雲端連動另一方）
-    async function leaveDuel() {
-      const targetRoomId = duelState.roomId;
-      const myName = duelState.myName || '學生';
-
-      leaveDuelLocal();
-      showToast("已關閉並退出雙人房間");
-
-      if (targetRoomId && window.FB && window.FB.isReady) {
-        try {
-          const { db, doc, updateDoc } = window.FB;
-          const roomRef = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", targetRoomId);
-          await updateDoc(roomRef, {
-            status: 'closed',
-            closedBy: myName,
-            updatedAt: Date.now()
-          });
-        } catch (e) {
-          // 忽略已刪除或連線中斷錯誤
-        }
-      }
-    }
-
-    /* ==========================================================================
-       3. 多人派對邏輯 (最多 20 人，輪流或全員競速)
-       ========================================================================== */
-    let multiState = {
-      roomId: '',
-      isHost: false,
-      myId: 'user_' + Math.random().toString(36).substring(2, 7),
-      myName: '',
-      guess: '',
-      ruleType: 'turn',
-      unsub: null,
-      hasEnded: false
-    };
-
+    /* ============================================================
+       3. 多人派對邏輯 (全體同時進退與再比一次名單同步)
+       ============================================================ */
     async function createMultiRoom() {
-      if (!window.FB || !window.FB.isReady) {
-        showToast("Firebase 尚未連線，請檢查網路！", "error");
+      if (!window.FB_SYSTEM || !window.FB_SYSTEM.currentUser) {
+        showToast("Firebase 連線未就緒！", "error");
         return;
       }
-      const pName = document.getElementById('multi-name-input').value.trim() || '學生';
-      const ruleTypeEl = document.querySelector('input[name="multi-rule-type"]:checked');
-      const ruleType = ruleTypeEl ? ruleTypeEl.value : 'turn';
-      const code = generate4DigitCode();
-      const { db, doc, setDoc } = window.FB;
+      const hostInput = document.getElementById('multi-host-name-input');
+      const hostName = (hostInput ? hostInput.value.trim() : '') || '關主';
+      const code = generate4Code();
+      const ruleType = document.querySelector('input[name="multi-rule-type"]:checked').value;
+      const { db, doc, setDoc } = window.FB_SYSTEM;
 
       multiState.roomId = code;
       multiState.isHost = true;
-      multiState.myName = pName;
+      multiState.myName = hostName;
       multiState.ruleType = ruleType;
-      multiState.guess = '';
-      multiState.hasEnded = false;
+      multiState.currentInput = '';
+      multiState.isSubmitting = false;
 
       const roomData = {
         roomId: code,
         hostId: multiState.myId,
         digitCount,
         ruleType,
-        secret: generateRandomSecret(digitCount),
+        secret: generateSecretNum(digitCount),
         status: 'waiting',
-        turnIndex: 0,
-        players: [{ id: multiState.myId, name: pName, isHost: true }],
+        players: [{ id: multiState.myId, name: hostName, isHost: true, stepCount: 0, ready: true }],
         history: [],
+        currentTurnIndex: 0,
         winner: null,
-        closedBy: null,
         updatedAt: Date.now()
       };
 
       try {
         await setDoc(doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", code), roomData);
-        
         document.getElementById('multi-lobby-card').classList.add('hidden');
         document.getElementById('multi-waiting-card').classList.remove('hidden');
-        document.getElementById('multi-display-code').textContent = code;
-        document.getElementById('multi-host-controls').classList.remove('hidden');
-        document.getElementById('multi-guest-notice').classList.add('hidden');
+        document.getElementById('multi-display-code').innerText = code;
 
-        // 繪製 QR Code
-        const inviteURL = new URL(window.location.href);
-        inviteURL.searchParams.set('mode', 'multi');
-        inviteURL.searchParams.set('room', code);
-        drawQRCode('multi-qrcode-box', inviteURL.toString());
+        const url = new URL(window.location.href);
+        url.searchParams.set('mode', 'multi');
+        url.searchParams.set('room', code);
+        renderQRCodeHelper('multi-qrcode-box', url.toString());
 
         listenMultiRoom(code);
-        playSound('click');
-        showToast(`多人房間已建立！代碼：${code}`);
-      } catch (e) {
-        showToast("開房失敗：" + e.message, "error");
+        showToast(`派對房間 ${code} 建立成功！`);
+      } catch (err) {
+        showToast("建立派對失敗: " + err.message, "error");
       }
     }
 
     async function joinMultiRoom() {
-      if (!window.FB || !window.FB.isReady) {
-        showToast("Firebase 尚未連線，請檢查網路！", "error");
+      if (!window.FB_SYSTEM || !window.FB_SYSTEM.currentUser) {
+        showToast("Firebase 連線未就緒！", "error");
         return;
       }
       const code = document.getElementById('multi-code-input').value.trim();
+      const guestInput = document.getElementById('multi-guest-name-input');
+      const guestName = (guestInput ? guestInput.value.trim() : '') || '學生';
+
       if (!/^\d{4}$/.test(code)) {
-        showToast("請輸入完整的 4 位純數字代碼！", "error");
+        showToast("請輸入 4 位純數字代碼！", "error");
         return;
       }
-      const pName = document.getElementById('multi-name-input').value.trim() || '學生';
-      const { db, doc, getDoc, updateDoc, arrayUnion } = window.FB;
-      const roomRef = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", code);
 
-      try {
-        const snap = await getDoc(roomRef);
-        if (!snap.exists()) {
-          showToast("找不到此派對房間！", "error");
-          return;
-        }
-        const data = snap.data();
-        if (data.status !== 'waiting') {
-          showToast("戰局已在進行中，無法中途加入！", "error");
-          return;
-        }
-        if ((data.players || []).length >= 20) {
-          showToast("房間人數已滿 (上限 20 人)！", "error");
-          return;
-        }
+      const { db, doc, getDoc, updateDoc, arrayUnion } = window.FB_SYSTEM;
+      const ref = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", code);
+      const snap = await getDoc(ref);
 
-        multiState.roomId = code;
-        multiState.isHost = false;
-        multiState.myName = pName;
-        multiState.ruleType = data.ruleType;
-        multiState.guess = '';
-        multiState.hasEnded = false;
-        digitCount = data.digitCount || digitCount;
-
-        await updateDoc(roomRef, {
-          players: arrayUnion({ id: multiState.myId, name: pName, isHost: false }),
-          updatedAt: Date.now()
-        });
-
-        document.getElementById('multi-lobby-card').classList.add('hidden');
-        document.getElementById('multi-waiting-card').classList.remove('hidden');
-        document.getElementById('multi-display-code').textContent = code;
-        document.getElementById('multi-host-controls').classList.add('hidden');
-        document.getElementById('multi-guest-notice').classList.remove('hidden');
-
-        const inviteURL = new URL(window.location.href);
-        inviteURL.searchParams.set('mode', 'multi');
-        inviteURL.searchParams.set('room', code);
-        drawQRCode('multi-qrcode-box', inviteURL.toString());
-
-        listenMultiRoom(code);
-        playSound('click');
-        showToast(`成功加入房間 ${code}！`);
-      } catch (e) {
-        showToast("加入失敗：" + e.message, "error");
+      if (!snap.exists()) {
+        showToast("查無此派對房間！", "error");
+        return;
       }
+      const data = snap.data();
+      if (data.status === 'closed') {
+        showToast("此派對已解散！", "error");
+        return;
+      }
+      if (data.status === 'playing') {
+        showToast("遊戲已開打，無法中途加入！", "error");
+        return;
+      }
+      if ((data.players || []).length >= 20) {
+        showToast("房間已滿 20 人！", "error");
+        return;
+      }
+
+      multiState.roomId = code;
+      multiState.isHost = false;
+      multiState.myName = guestName;
+      multiState.ruleType = data.ruleType;
+      multiState.currentInput = '';
+      multiState.isSubmitting = false;
+      digitCount = data.digitCount || 4;
+
+      await updateDoc(ref, {
+        players: arrayUnion({ id: multiState.myId, name: guestName, isHost: false, stepCount: 0, ready: true }),
+        updatedAt: Date.now()
+      });
+
+      listenMultiRoom(code);
+      showToast(`成功加入派對 ${code}！`);
     }
 
     function listenMultiRoom(code) {
-      if (multiState.unsub) multiState.unsub();
-      const { db, doc, onSnapshot } = window.FB;
-      const roomRef = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", code);
+      if (multiState.unsubscribe) multiState.unsubscribe();
+      const { db, doc, onSnapshot } = window.FB_SYSTEM;
+      const ref = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", code);
 
-      multiState.unsub = onSnapshot(roomRef, (snap) => {
+      multiState.unsubscribe = onSnapshot(ref, (snap) => {
         if (!snap.exists()) {
-          showToast("派對房間已解散", "info");
+          showToast("派對已解散！");
           leaveMultiLocal();
           return;
         }
         const data = snap.data();
+        multiState.lastData = data;
 
-        // 檢查房間是否已被關閉
         if (data.status === 'closed') {
-          showToast(`【${data.closedBy || '房主'}】已關閉/解散房間！`, "info");
+          showToast("房主已關閉派對房間！");
           leaveMultiLocal();
           return;
         }
 
-        digitCount = data.digitCount || digitCount;
-
-        // 確認主控身分
-        multiState.isHost = (data.hostId === multiState.myId);
-
-        // 1. 優先處理戰局結束狀態 (全體同時顯示結算)
-        if (data.status === 'finished' || data.winner) {
-          document.getElementById('multi-lobby-card').classList.add('hidden');
-          document.getElementById('multi-waiting-card').classList.add('hidden');
-          document.getElementById('multi-arena-card').classList.remove('hidden');
-          renderMultiArena(data);
-          handleMultiWinner(data);
-          return;
-        }
-
-        // 2. 等待設定室狀態 (初次開房或再比一次)
+        // 等待室更新
         if (data.status === 'waiting') {
-          multiState.hasEnded = false;
-          closeWinModal();
-          document.getElementById('multi-lobby-card').classList.add('hidden');
-          document.getElementById('multi-arena-card').classList.add('hidden');
-          document.getElementById('multi-waiting-card').classList.remove('hidden');
-          document.getElementById('multi-display-code').textContent = data.roomId;
-
-          if (multiState.isHost) {
-            document.getElementById('multi-host-controls').classList.remove('hidden');
-            document.getElementById('multi-guest-notice').classList.add('hidden');
-          } else {
-            document.getElementById('multi-host-controls').classList.add('hidden');
-            document.getElementById('multi-guest-notice').classList.remove('hidden');
-          }
-
-          // 繪製或更新 QR Code
-          const inviteURL = new URL(window.location.href);
-          inviteURL.searchParams.set('mode', 'multi');
-          inviteURL.searchParams.set('room', data.roomId);
-          drawQRCode('multi-qrcode-box', inviteURL.toString());
-
-          renderMultiWaiting(data);
+          renderMultiWaitingView(data);
           return;
         }
 
-        // 3. 正式對戰狀態 (全體一同進入對戰畫面)
-        if (data.status === 'playing') {
-          multiState.hasEnded = false;
-          closeWinModal();
-          document.getElementById('multi-lobby-card').classList.add('hidden');
-          document.getElementById('multi-waiting-card').classList.add('hidden');
-          document.getElementById('multi-arena-card').classList.remove('hidden');
+        // 開戰或結束
+        if (data.status === 'playing' || data.status === 'finished') {
           renderMultiArena(data);
+          if (data.status === 'finished' && data.winner) {
+            handleMultiWinner(data);
+          }
         }
+      }, (err) => {
+        console.error("Multi listener error:", err);
       });
     }
 
-    function renderMultiWaiting(data) {
-      const list = document.getElementById('multi-players-list');
-      const count = document.getElementById('multi-player-count');
-      const players = data.players || [];
-      count.textContent = players.length;
+    function renderMultiWaitingView(data) {
+      document.getElementById('multi-lobby-card').classList.add('hidden');
+      document.getElementById('multi-arena-card').classList.add('hidden');
+      document.getElementById('multi-waiting-card').classList.remove('hidden');
 
-      list.innerHTML = players.map(p => `
+      const isHost = data.hostId === multiState.myId;
+      multiState.isHost = isHost;
+
+      document.getElementById('multi-display-code').innerText = data.roomId;
+      document.getElementById('multi-player-count').innerText = (data.players || []).length;
+
+      const pList = document.getElementById('multi-players-list');
+      pList.innerHTML = (data.players || []).map(p => `
         <div class="flex items-center gap-1.5 p-2 rounded-xl bg-slate-900 border border-slate-800 text-xs">
-          <div class="w-5 h-5 rounded-md bg-indigo-500/20 text-indigo-400 font-bold flex items-center justify-center text-[10px]">
+          <div class="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-[10px]">
             ${p.name.slice(0, 1)}
           </div>
-          <span class="truncate text-slate-200">${p.name}</span>
-          ${p.isHost 
-            ? '<span class="text-[9px] text-amber-400 font-digital ml-auto">房主</span>' 
-            : '<span class="text-[9px] text-emerald-400 font-digital ml-auto">就緒</span>'}
+          <span class="truncate font-medium text-slate-200">${p.name}</span>
+          ${p.isHost ? '<span class="text-[10px] text-amber-400 font-digital ml-auto">房主</span>' : '<span class="text-[10px] text-emerald-400 ml-auto">就緒</span>'}
         </div>
       `).join('');
+
+      if (isHost) {
+        document.getElementById('multi-host-controls').classList.remove('hidden');
+        document.getElementById('multi-guest-notice').classList.add('hidden');
+      } else {
+        document.getElementById('multi-host-controls').classList.add('hidden');
+        document.getElementById('multi-guest-notice').classList.remove('hidden');
+      }
     }
 
     async function startMultiGame() {
-      const { db, doc, updateDoc } = window.FB;
-      const roomRef = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", multiState.roomId);
-      await updateDoc(roomRef, { status: 'playing', updatedAt: Date.now() });
+      if (!multiState.roomId) return;
+      const { db, doc, updateDoc } = window.FB_SYSTEM;
+      const ref = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", multiState.roomId);
+
+      try {
+        await updateDoc(ref, {
+          status: 'playing',
+          updatedAt: Date.now()
+        });
+      } catch (err) {
+        showToast("啟動遊戲失敗: " + err.message, "error");
+      }
     }
 
     function renderMultiArena(data) {
-      document.getElementById('multi-arena-room-tag').textContent = data.roomId;
-      const isRace = (data.ruleType === 'race');
-      document.getElementById('multi-rule-tag').textContent = isRace ? '⚡ 全員競速' : '🔄 輪流接力';
+      document.getElementById('multi-waiting-card').classList.add('hidden');
+      document.getElementById('multi-arena-card').classList.remove('hidden');
+      document.getElementById('multi-arena-room-tag').innerText = data.roomId;
+      document.getElementById('multi-rule-tag').innerText = data.ruleType === 'turn' ? '🔄 輪流接力' : '⚡ 競速搶猜';
 
+      const isTurnMode = data.ruleType === 'turn';
       const players = data.players || [];
-      const currentGuesser = players[data.turnIndex % players.length];
-      const isMyTurn = currentGuesser && (currentGuesser.id === multiState.myId);
+      const currentTurnPlayer = players[(data.currentTurnIndex || 0) % players.length];
+      const isMyTurn = currentTurnPlayer && currentTurnPlayer.id === multiState.myId;
 
-      const badge = document.getElementById('multi-turn-badge');
       const overlay = document.getElementById('multi-lock-overlay');
-      const overlayIcon = document.getElementById('multi-lock-icon');
-      const overlayText = document.getElementById('multi-lock-text');
+      const lockIcon = document.getElementById('multi-lock-icon');
+      const lockText = document.getElementById('multi-lock-text');
       const endActions = document.getElementById('multi-end-actions');
+      const badge = document.getElementById('multi-turn-badge');
 
-      // 全體同時顯示結算畫面
-      if (data.status === 'finished' || data.winner) {
+      if (data.status === 'finished') {
         overlay.classList.remove('hidden');
-        if (overlayIcon) {
-          overlayIcon.className = "fa-solid fa-trophy text-3xl text-amber-400 mb-2";
-        }
-        if (overlayText) {
-          overlayText.textContent = `戰局已結算完成！冠軍：【${data.winner?.name || '特工'}】`;
-        }
-        if (endActions) {
-          endActions.classList.remove('hidden');
-        }
-        badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30";
-        badge.textContent = "🏆 戰局結束";
+        lockIcon.className = "fa-solid fa-trophy text-4xl text-amber-400 mb-2";
+        lockText.innerText = "戰局已結算完成！";
+        endActions.classList.remove('hidden');
+        badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40";
+        badge.innerText = "🏆 戰局結束";
       } else {
-        if (endActions) endActions.classList.add('hidden');
-        if (overlayIcon) overlayIcon.className = "fa-solid fa-hourglass-half text-3xl text-amber-400 animate-spin mb-2";
-
-        if (isRace) {
-          overlay.classList.add('hidden');
-          badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30";
-          badge.textContent = "⚡ 全員競速中！誰先猜出誰獲勝！";
-        } else {
+        endActions.classList.add('hidden');
+        if (isTurnMode) {
           if (isMyTurn) {
             overlay.classList.add('hidden');
             badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
-            badge.textContent = "輪到你了！請送出線索";
+            badge.innerText = "輪到你了！請送出線索";
           } else {
             overlay.classList.remove('hidden');
-            overlayText.textContent = `等待【${currentGuesser ? currentGuesser.name : '特工'}】思考中...`;
-            badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30";
-            badge.textContent = `輪到 ${currentGuesser ? currentGuesser.name : ''}`;
+            lockIcon.className = "fa-solid fa-hourglass-half text-3xl text-amber-400 animate-spin mb-2";
+            lockText.innerText = `等待【${currentTurnPlayer?.name || '特工'}】思考中...`;
+            badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30";
+            badge.innerText = `輪到 ${currentTurnPlayer?.name || '特工'}`;
           }
+        } else {
+          // 競速搶猜：所有人皆解鎖
+          overlay.classList.add('hidden');
+          badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse";
+          badge.innerText = "全員競速中！搶先破譯者獲勝";
         }
       }
 
-      // 渲染順序條
-      renderMultiOrderBar(players, data.turnIndex, isRace);
-      renderSlots('multi-guess-slots', multiState.guess, digitCount);
+      renderMultiOrderBar(players, data.currentTurnIndex, isTurnMode);
       renderMultiHistory(data.history || []);
+      updateSlotDisplay('multi-guess-slots', multiState.currentInput);
     }
 
-    function renderMultiOrderBar(players, curIdx, isRace) {
+    function renderMultiOrderBar(players, currentIdx, isTurnMode) {
       const bar = document.getElementById('multi-order-bar');
-      if (!bar) return;
-      if (isRace) {
-        bar.innerHTML = `<span class="text-xs text-amber-400 px-2 py-1 font-bold">⚡ 競速搶猜進行中，所有平板同步獨立推理！</span>`;
+      if (!isTurnMode) {
+        bar.innerHTML = `<span class="text-xs text-amber-400 px-2 font-digital">⚡ 零時差競速：所有人同時搶答，比誰先破解！</span>`;
         return;
       }
-      const active = curIdx % players.length;
+      const activeIdx = (currentIdx || 0) % players.length;
       bar.innerHTML = players.map((p, i) => `
         <div class="flex-shrink-0 px-2.5 py-1 rounded-xl border text-xs font-digital font-bold flex items-center gap-1 ${
-          i === active ? 'bg-indigo-600 border-indigo-500 text-white shadow' : 'bg-slate-900 border-slate-800 text-slate-400'
+          i === activeIdx 
+            ? 'bg-indigo-600 border-indigo-500 text-white shadow-md' 
+            : 'bg-slate-900 border-slate-800 text-slate-400'
         }">
           <span>${i + 1}.</span>
-          <span class="truncate max-w-[70px]">${p.name}</span>
+          <span class="truncate max-w-[65px]">${p.name}</span>
         </div>
       `).join('');
-    }
-
-    function multiKeyPress(k) {
-      if (multiState.hasEnded) return;
-      const overlay = document.getElementById('multi-lock-overlay');
-      if (overlay && !overlay.classList.contains('hidden')) return;
-
-      if (multiState.guess.length >= digitCount) return;
-      if (multiState.guess.includes(k)) {
-        playSound('error');
-        showToast(`數字 ${k} 不可重複輸入！`, 'error');
-        return;
-      }
-      multiState.guess += k;
-      renderSlots('multi-guess-slots', multiState.guess, digitCount);
-      playSound('click');
-    }
-
-    function multiKeyBack() {
-      if (multiState.hasEnded) return;
-      const overlay = document.getElementById('multi-lock-overlay');
-      if (overlay && !overlay.classList.contains('hidden')) return;
-
-      if (multiState.guess.length === 0) return;
-      multiState.guess = multiState.guess.slice(0, -1);
-      renderSlots('multi-guess-slots', multiState.guess, digitCount);
-      playSound('delete');
-    }
-
-    async function submitMultiGuess() {
-      if (multiState.hasEnded) return;
-      if (multiState.guess.length !== digitCount) {
-        playSound('error');
-        showToast(`請輸入滿 ${digitCount} 位數！`, 'error');
-        return;
-      }
-      const { db, doc, getDoc, updateDoc, arrayUnion } = window.FB;
-      const roomRef = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", multiState.roomId);
-      const snap = await getDoc(roomRef);
-      if (!snap.exists()) return;
-      const data = snap.data();
-
-      if (data.status === 'finished' || data.winner) {
-        showToast("本局戰況已結束！", "info");
-        return;
-      }
-
-      const isRace = (data.ruleType === 'race');
-      if (!isRace) {
-        const players = data.players || [];
-        const currentGuesser = players[data.turnIndex % players.length];
-        if (currentGuesser.id !== multiState.myId) {
-          showToast("尚未輪到你的回合！", "error");
-          return;
-        }
-      }
-
-      const res = calcAB(multiState.guess, data.secret);
-      const item = {
-        name: multiState.myName,
-        guess: multiState.guess,
-        a: res.a,
-        b: res.b,
-        time: Date.now()
-      };
-
-      const updatePayload = {
-        history: arrayUnion(item),
-        turnIndex: (data.turnIndex || 0) + 1,
-        updatedAt: Date.now()
-      };
-
-      if (res.a === digitCount) {
-        updatePayload.winner = { id: multiState.myId, name: multiState.myName };
-        updatePayload.status = 'finished';
-      }
-
-      multiState.guess = '';
-      renderSlots('multi-guess-slots', '', digitCount);
-      await updateDoc(roomRef, updatePayload);
-      playSound(res.a === digitCount ? 'win' : 'clue');
     }
 
     function renderMultiHistory(history) {
       const list = document.getElementById('multi-history-list');
       const count = document.getElementById('multi-history-count');
-      if (!list) return;
+      count.innerText = `${history.length} 條情報`;
 
-      count.textContent = `${history.length} 條情報`;
       if (history.length === 0) {
-        list.innerHTML = `<div class="text-slate-500 text-xs text-center py-10">尚無特工送出情報</div>`;
+        list.innerHTML = `<div class="h-full flex items-center justify-center text-slate-500 text-xs">尚無同學送出線索</div>`;
         return;
       }
 
       list.innerHTML = history.slice().reverse().map(h => `
-        <div class="p-2.5 rounded-2xl bg-slate-800 border border-slate-700/80 flex items-center justify-between">
-          <div>
-            <span class="text-[10px] text-slate-400 block">${h.name}</span>
-            <span class="font-digital text-base font-bold text-white tracking-widest">${h.guess}</span>
+        <div class="p-2 rounded-xl bg-slate-800 border border-slate-700/80 flex items-center justify-between text-xs">
+          <div class="space-y-0.5">
+            <span class="text-[10px] text-slate-400 block">${h.playerName}</span>
+            <span class="font-digital text-sm font-bold text-white tracking-widest">${h.guess}</span>
           </div>
-          <div class="flex gap-1.5 font-digital text-xs font-black">
-            <span class="px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">${h.a}A</span>
-            <span class="px-2 py-0.5 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30">${h.b}B</span>
+          <div class="flex gap-1 font-digital font-bold">
+            <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">${h.a}A</span>
+            <span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400">${h.b}B</span>
           </div>
         </div>
       `).join('');
     }
 
-    function handleMultiWinner(data) {
-      if (multiState.hasEnded) return;
-      multiState.hasEnded = true;
-
-      const isWinner = (data.winner?.id === multiState.myId);
-      playSound('win');
-      openWinModal(
-        isWinner ? "恭喜奪冠！全場最速解開密碼" : `特工【${data.winner?.name || '有人'}】率先破解密碼！`,
-        "本局戰況已結算",
-        data.secret
-      );
+    function multiKeyPress(k) {
+      if (multiState.currentInput.length >= digitCount) return;
+      if (multiState.currentInput.includes(k)) {
+        showToast("數字不可重複！", "error");
+        playSound('error');
+        return;
+      }
+      multiState.currentInput += k;
+      playSound('tap');
+      updateSlotDisplay('multi-guess-slots', multiState.currentInput);
     }
 
-    // 多人派對：再比一次 (進入設定/等待畫面，主控即時看到選擇再比登入的名單)
-    async function rematchMultiGame() {
-      if (!window.FB || !window.FB.isReady || !multiState.roomId) return;
-      closeWinModal();
-      multiState.hasEnded = false;
-      multiState.guess = '';
-
-      const { db, doc, getDoc, updateDoc } = window.FB;
-      const roomRef = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", multiState.roomId);
-
-      try {
-        const snap = await getDoc(roomRef);
-        if (!snap.exists()) return;
-        const data = snap.data();
-
-        const myObj = { id: multiState.myId, name: multiState.myName, isHost: multiState.isHost };
-
-        if (multiState.isHost) {
-          // 主控發起再比一次：重設房間狀態為 waiting，初始化新密碼，名單先包含主控自己
-          await updateDoc(roomRef, {
-            status: 'waiting',
-            turnIndex: 0,
-            secret: generateRandomSecret(digitCount),
-            history: [],
-            winner: null,
-            closedBy: null,
-            players: [myObj],
-            updatedAt: Date.now()
-          });
-          showToast("已重開戰局！等待特工登入名單", "success");
-        } else {
-          // 學生成員點選再比一次：
-          if (data.status === 'waiting') {
-            const existingPlayers = data.players || [];
-            if (!existingPlayers.some(p => p.id === multiState.myId)) {
-              await updateDoc(roomRef, {
-                players: [...existingPlayers, myObj],
-                updatedAt: Date.now()
-              });
-            }
-          } else {
-            // 若主控尚未點擊，學生成員先行響應重設回等待室，將主控與自己登入進名單
-            const hostObj = (data.players || []).find(p => p.isHost) || { id: data.hostId, name: '房主', isHost: true };
-            await updateDoc(roomRef, {
-              status: 'waiting',
-              turnIndex: 0,
-              secret: generateRandomSecret(digitCount),
-              history: [],
-              winner: null,
-              closedBy: null,
-              players: [hostObj, myObj],
-              updatedAt: Date.now()
-            });
-          }
-          showToast("已登入再比名單！等待房主開戰", "success");
-        }
-      } catch (err) {
-        showToast("再比一次失敗：" + err.message, "error");
-      }
+    function multiKeyBack() {
+      if (multiState.currentInput.length === 0) return;
+      multiState.currentInput = multiState.currentInput.slice(0, -1);
+      playSound('back');
+      updateSlotDisplay('multi-guess-slots', multiState.currentInput);
     }
 
-    function leaveMultiLocal() {
-      closeWinModal();
-      if (multiState.unsub) {
-        multiState.unsub();
-        multiState.unsub = null;
+    async function submitMultiGuess() {
+      if (multiState.isSubmitting) return;
+      if (multiState.currentInput.length !== digitCount) {
+        showToast(`請輸入滿 ${digitCount} 位數！`, "error");
+        playSound('error');
+        return;
       }
-      multiState = {
-        roomId: '',
-        isHost: false,
-        myId: 'user_' + Math.random().toString(36).substring(2, 7),
-        myName: '',
-        guess: '',
-        ruleType: 'turn',
-        unsub: null,
-        hasEnded: false
+
+      const data = multiState.lastData;
+      if (!data || data.status !== 'playing') return;
+
+      const isTurnMode = data.ruleType === 'turn';
+      const players = data.players || [];
+      const currentTurnPlayer = players[(data.currentTurnIndex || 0) % players.length];
+
+      if (isTurnMode && (!currentTurnPlayer || currentTurnPlayer.id !== multiState.myId)) {
+        showToast("尚未輪到你的回合！", "error");
+        return;
+      }
+
+      multiState.isSubmitting = true;
+      const guess = multiState.currentInput;
+      const { a, b } = calculate1A2B(guess, data.secret);
+      const isWin = (a === digitCount);
+
+      const { db, doc, updateDoc, arrayUnion } = window.FB_SYSTEM;
+      const ref = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", data.roomId);
+
+      const updatePayload = {
+        history: arrayUnion({
+          playerId: multiState.myId,
+          playerName: multiState.myName,
+          guess,
+          a,
+          b,
+          time: Date.now()
+        }),
+        currentTurnIndex: (data.currentTurnIndex || 0) + 1,
+        updatedAt: Date.now()
       };
 
-      document.getElementById('multi-waiting-card').classList.add('hidden');
-      document.getElementById('multi-arena-card').classList.add('hidden');
-      document.getElementById('multi-lobby-card').classList.remove('hidden');
+      if (isWin) {
+        updatePayload.status = 'finished';
+        updatePayload.winner = { id: multiState.myId, name: multiState.myName };
+      }
+
+      multiState.currentInput = '';
+      updateSlotDisplay('multi-guess-slots', '');
+
+      try {
+        await updateDoc(ref, updatePayload);
+        playSound(isWin ? 'win' : 'guess');
+      } catch (err) {
+        showToast("送出猜測失敗！", "error");
+      } finally {
+        multiState.isSubmitting = false;
+      }
+    }
+
+    function handleMultiWinner(data) {
+      const winner = data.winner;
+      const isWinner = winner && winner.id === multiState.myId;
+      const winnerName = winner ? winner.name : '同學';
+
+      if (isWinner) {
+        playSound('win');
+        openWinModal("你奪冠了！率先破譯！", `實力超群！成功解開全場密碼`, data.secret);
+      } else {
+        openWinModal("戰局已結束！", `由【${winnerName}】成功破解終極密碼奪得第一！`, data.secret);
+      }
+    }
+
+    async function rematchMultiGame() {
+      if (!multiState.roomId) return;
+      const { db, doc, updateDoc } = window.FB_SYSTEM;
+      const ref = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", multiState.roomId);
+
+      closeWinModal();
+      multiState.currentInput = '';
+
+      const updatedPlayers = (multiState.lastData?.players || []).map(p => ({
+        ...p,
+        stepCount: 0,
+        ready: true
+      }));
+
+      await updateDoc(ref, {
+        status: 'waiting',
+        secret: generateSecretNum(digitCount),
+        history: [],
+        currentTurnIndex: 0,
+        winner: null,
+        players: updatedPlayers,
+        updatedAt: Date.now()
+      });
+      showToast("已重返設定室，主控可確認再戰名單！");
     }
 
     async function leaveMulti() {
-      const targetRoomId = multiState.roomId;
-      const isHost = multiState.isHost;
-      const myId = multiState.myId;
-      const myName = multiState.myName || '學生';
-
-      leaveMultiLocal();
-      showToast("已退出多人派對房間");
-
-      if (targetRoomId && window.FB && window.FB.isReady) {
+      if (multiState.roomId && window.FB_SYSTEM) {
+        const { db, doc, updateDoc } = window.FB_SYSTEM;
+        const ref = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", multiState.roomId);
         try {
-          const { db, doc, getDoc, updateDoc } = window.FB;
-          const roomRef = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", targetRoomId);
-
-          if (isHost) {
-            // 房主離開 -> 關閉整個房間，全員連動退出
-            await updateDoc(roomRef, {
-              status: 'closed',
-              closedBy: myName,
-              updatedAt: Date.now()
-            });
+          if (multiState.isHost) {
+            await updateDoc(ref, { status: 'closed', updatedAt: Date.now() });
           } else {
-            // 學生成員離開 -> 從名單中移除自己，讓主控螢幕名單即時更新
-            const snap = await getDoc(roomRef);
-            if (snap.exists()) {
-              const data = snap.data();
-              const updatedPlayers = (data.players || []).filter(p => p.id !== myId);
-              await updateDoc(roomRef, {
-                players: updatedPlayers,
-                updatedAt: Date.now()
-              });
-            }
+            const curPlayers = (multiState.lastData?.players || []).filter(p => p.id !== multiState.myId);
+            await updateDoc(ref, { players: curPlayers, updatedAt: Date.now() });
           }
-        } catch (e) {
-          // 忽略已刪除或連線關閉
-        }
+        } catch (e) {}
       }
+      leaveMultiLocal();
     }
 
-    // 勝利 Modal 控制
+    function leaveMultiLocal() {
+      if (multiState.unsubscribe) multiState.unsubscribe();
+      multiState = { roomId: null, isHost: false, myName: '學生', myId: 'player_' + Math.random().toString(36).substring(2, 8), currentInput: '', ruleType: 'turn', lastData: null, isSubmitting: false, unsubscribe: null };
+      closeWinModal();
+      document.getElementById('multi-lobby-card').classList.remove('hidden');
+      document.getElementById('multi-waiting-card').classList.add('hidden');
+      document.getElementById('multi-arena-card').classList.add('hidden');
+    }
+
+    /* 彈窗控制 */
     function openWinModal(title, subtitle, secret) {
-      document.getElementById('win-title').textContent = title;
-      document.getElementById('win-subtitle').textContent = subtitle;
-      document.getElementById('win-secret-display').textContent = secret;
+      document.getElementById('win-title').innerText = title;
+      document.getElementById('win-subtitle').innerText = subtitle;
+      document.getElementById('win-secret-code').innerText = secret;
       document.getElementById('win-modal').classList.remove('hidden');
     }
 
@@ -2171,49 +1939,34 @@
       document.getElementById('win-modal').classList.add('hidden');
     }
 
-    // 診斷 Modal
     function openDiagnosticModal() {
-      const modal = document.getElementById('diagnostic-modal');
-      const status = document.getElementById('diag-status');
-      const uid = document.getElementById('diag-uid');
-      const errBox = document.getElementById('diag-err-box');
-      const errMsg = document.getElementById('diag-err-msg');
-
-      if (window.FB && window.FB.isReady) {
-        status.textContent = "已連線運作中 ✓";
-        status.className = "font-bold text-emerald-400";
-        uid.textContent = window.FB.user?.uid || '匿名玩家';
-        errBox.classList.add('hidden');
-      } else {
-        status.textContent = "連線異常 / 失敗 ✗";
-        status.className = "font-bold text-rose-400";
-        uid.textContent = "未通過驗證";
-        if (window.FB && window.FB.error) {
-          errBox.classList.remove('hidden');
-          errMsg.textContent = `${window.FB.error.code || 'ERROR'}: ${window.FB.error.message}`;
-        }
-      }
-      modal.classList.remove('hidden');
+      document.getElementById('diagnostic-modal').classList.remove('hidden');
     }
 
     function closeDiagnosticModal() {
       document.getElementById('diagnostic-modal').classList.add('hidden');
     }
 
-    // 實體鍵盤監聽
+    // 鍵盤實體按鍵相容
     window.addEventListener('keydown', (e) => {
       if (['0','1','2','3','4','5','6','7','8','9'].includes(e.key)) {
         if (currentMode === 'single') singleKeyPress(e.key);
-        else if (currentMode === 'duel') duelKeyPress(e.key);
-        else if (currentMode === 'multi') multiKeyPress(e.key);
+        else if (currentMode === 'duel') {
+          if (!document.getElementById('duel-secret-card').classList.contains('hidden')) duelSecretPress(e.key);
+          else duelKeyPress(e.key);
+        } else if (currentMode === 'multi') multiKeyPress(e.key);
       } else if (e.key === 'Backspace') {
         if (currentMode === 'single') singleKeyBack();
-        else if (currentMode === 'duel') duelKeyBack();
-        else if (currentMode === 'multi') multiKeyBack();
+        else if (currentMode === 'duel') {
+          if (!document.getElementById('duel-secret-card').classList.contains('hidden')) clearDuelSecret();
+          else duelKeyBack();
+        } else if (currentMode === 'multi') multiKeyBack();
       } else if (e.key === 'Enter') {
         if (currentMode === 'single') submitSingleGuess();
-        else if (currentMode === 'duel') submitDuelGuess();
-        else if (currentMode === 'multi') submitMultiGuess();
+        else if (currentMode === 'duel') {
+          if (!document.getElementById('duel-secret-card').classList.contains('hidden')) lockDuelSecret();
+          else submitDuelGuess();
+        } else if (currentMode === 'multi') submitMultiGuess();
       }
     });
   </script>
