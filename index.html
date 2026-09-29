@@ -221,7 +221,7 @@
         </div>
 
         <div class="space-y-4">
-          <input type="text" id="duel-name-input" placeholder="輸入你的暱稱" value="特工 Alpha" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+          <input type="text" id="duel-name-input" placeholder="輸入你的暱稱" value="學生" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
           
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
             <button onclick="createDuelRoom()" class="py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-sm transition shadow active:scale-95 flex items-center justify-center gap-2">
@@ -269,6 +269,18 @@
 
       <!-- 秘密出題階段 -->
       <div id="duel-secret-card" class="hidden bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl max-w-md mx-auto space-y-4">
+        <!-- 雙方出題就緒狀態指示條 -->
+        <div class="grid grid-cols-2 gap-2 p-2 bg-slate-950 rounded-2xl border border-slate-800 text-xs">
+          <div class="flex items-center gap-1.5 px-2 py-1 bg-slate-900 rounded-xl">
+            <span id="duel-my-ready-dot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+            <span id="duel-my-ready-text" class="text-amber-400 truncate">我方：出題中...</span>
+          </div>
+          <div class="flex items-center gap-1.5 px-2 py-1 bg-slate-900 rounded-xl">
+            <span id="duel-opp-ready-dot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+            <span id="duel-opp-ready-text" class="text-amber-400 truncate">對手：出題中...</span>
+          </div>
+        </div>
+
         <div class="text-center space-y-1">
           <h3 class="text-lg font-bold text-white">秘密出題階段</h3>
           <p class="text-xs text-slate-400">為對手設定一組 <span class="digit-tag font-digital text-indigo-400">4</span> 位不重複數字！</p>
@@ -322,9 +334,17 @@
           <!-- 我方輸入區 -->
           <div class="md:col-span-7 space-y-4">
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-lg flex flex-col items-center relative overflow-hidden">
-              <div id="duel-lock-overlay" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-20 flex flex-col items-center justify-center p-4 text-center">
-                <i class="fa-solid fa-hourglass-half text-3xl text-amber-400 animate-spin mb-2"></i>
-                <p class="text-sm font-bold text-white">對手思考猜測中...</p>
+              <div id="duel-lock-overlay" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-sm z-20 flex flex-col items-center justify-center p-4 text-center">
+                <i id="duel-lock-icon" class="fa-solid fa-hourglass-half text-3xl text-amber-400 animate-spin mb-2"></i>
+                <p id="duel-lock-text" class="text-sm font-bold text-white">對手思考猜測中...</p>
+                <div id="duel-end-actions" class="hidden mt-3 flex items-center justify-center gap-2">
+                  <button onclick="restartDuelMatch()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition shadow active:scale-95 flex items-center gap-1.5">
+                    <i class="fa-solid fa-rotate-right"></i> 再比一次
+                  </button>
+                  <button onclick="leaveDuel()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition border border-slate-700 active:scale-95 flex items-center gap-1.5">
+                    <i class="fa-solid fa-door-open"></i> 關閉房間
+                  </button>
+                </div>
               </div>
 
               <div id="duel-guess-slots" class="flex gap-2.5 sm:gap-3 my-2 justify-center"></div>
@@ -405,7 +425,7 @@
         </div>
 
         <div class="space-y-4">
-          <input type="text" id="multi-name-input" placeholder="輸入你的暱稱" value="指揮官" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+          <input type="text" id="multi-name-input" placeholder="輸入你的暱稱" value="學生" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
           
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
             <button onclick="createMultiRoom()" class="py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-sm transition shadow active:scale-95 flex items-center justify-center gap-2">
@@ -629,7 +649,9 @@
           text.className = "text-emerald-400 font-bold";
         }
 
-        checkAutoJoinURL();
+        if (typeof window.checkAutoJoinURL === 'function') {
+          window.checkAutoJoinURL();
+        }
       } catch (err) {
         console.error("Firebase init failed:", err);
         window.FB.error = err;
@@ -822,7 +844,7 @@
       showToast("已複製專屬連線網址！", "success");
     }
 
-    function checkAutoJoinURL() {
+    window.checkAutoJoinURL = function() {
       const params = new URLSearchParams(window.location.search);
       const mode = params.get('mode');
       const room = params.get('room');
@@ -839,7 +861,13 @@
           showToast(`已透過 QR 碼帶入多人房間: ${room}`, "success");
         }
       }
-    }
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      if (typeof window.checkAutoJoinURL === 'function') {
+        window.checkAutoJoinURL();
+      }
+    });
 
     /* ==========================================================================
        1. 個人模式邏輯 (支援開始按鈕、草稿筆記、計時、結算)
@@ -1415,14 +1443,12 @@
       } else {
         // 後手回合 (p2)
         const p1AlreadySolved = !!data.p1PendingWin;
-
         if (p1AlreadySolved) {
-          // 先手先前已猜中，此為後手的最後一搏機會
           if (res.a === digitCount) {
-            // 後手也猜中 => 雙方在同輪次均破譯，宣告平手！
+            // 後手也猜中 => 雙方平手！
             updatePayload.winner = 'draw';
           } else {
-            // 後手未能追平 => 先手獲勝！
+            // 後手沒猜中 => 先手獲勝！
             updatePayload.winner = 'p1';
           }
           updatePayload.status = 'finished';
