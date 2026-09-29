@@ -1141,10 +1141,18 @@
       duelState.unsub = onSnapshot(roomRef, (snap) => {
         if (!snap.exists()) {
           showToast("房間已被關閉", "info");
-          leaveDuel();
+          leaveDuelLocal();
           return;
         }
         const data = snap.data();
+
+        // 偵測到任一方已關閉房間，立刻連動退出秘密出題或對戰畫面
+        if (data.status === 'closed') {
+          showToast(`【${data.closedBy || '對手'}】已關閉/離開房間！`, "info");
+          leaveDuelLocal();
+          return;
+        }
+
         digitCount = data.digitCount || digitCount;
 
         // 依據專屬 sessionToken 精準確認本機角色，即使同瀏覽器測試也絕不撞車
@@ -1546,6 +1554,7 @@
           'p2.ready': false,
           'p2.history': [],
           winner: null,
+          closedBy: null,
           updatedAt: Date.now()
         });
         showToast("已重設戰局，請雙方重新秘密出題！", "success");
@@ -1554,9 +1563,13 @@
       }
     }
 
-    function leaveDuel() {
+    // 本地 UI 清理與重置
+    function leaveDuelLocal() {
       closeWinModal();
-      if (duelState.unsub) duelState.unsub();
+      if (duelState.unsub) {
+        duelState.unsub();
+        duelState.unsub = null;
+      }
       duelState = {
         roomId: '',
         role: '',
@@ -1574,7 +1587,29 @@
       document.getElementById('duel-lobby-card').classList.remove('hidden');
       document.getElementById('btn-lock-duel-secret').classList.remove('hidden');
       document.getElementById('duel-secret-notice').classList.add('hidden');
-      showToast("已退出雙人房間");
+    }
+
+    // 主動關閉/退出房間（通知雲端連動另一方）
+    async function leaveDuel() {
+      const targetRoomId = duelState.roomId;
+      const myName = duelState.myName || '學生';
+
+      leaveDuelLocal();
+      showToast("已關閉並退出雙人房間");
+
+      if (targetRoomId && window.FB && window.FB.isReady) {
+        try {
+          const { db, doc, updateDoc } = window.FB;
+          const roomRef = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", targetRoomId);
+          await updateDoc(roomRef, {
+            status: 'closed',
+            closedBy: myName,
+            updatedAt: Date.now()
+          });
+        } catch (e) {
+          // 忽略已刪除或連線中斷錯誤
+        }
+      }
     }
 
     /* ==========================================================================
@@ -1587,7 +1622,8 @@
       myName: '',
       guess: '',
       ruleType: 'turn',
-      unsub: null
+      unsub: null,
+      hasEnded: false
     };
 
     async function createMultiRoom() {
@@ -1606,6 +1642,7 @@
       multiState.myName = pName;
       multiState.ruleType = ruleType;
       multiState.guess = '';
+      multiState.hasEnded = false;
 
       const roomData = {
         roomId: code,
@@ -1618,6 +1655,7 @@
         players: [{ id: multiState.myId, name: pName, isHost: true }],
         history: [],
         winner: null,
+        closedBy: null,
         updatedAt: Date.now()
       };
 
@@ -1679,10 +1717,12 @@
         multiState.myName = pName;
         multiState.ruleType = data.ruleType;
         multiState.guess = '';
+        multiState.hasEnded = false;
         digitCount = data.digitCount || digitCount;
 
         await updateDoc(roomRef, {
-          players: arrayUnion({ id: multiState.myId, name: pName, isHost: false })
+          players: arrayUnion({ id: multiState.myId, name: pName, isHost: false }),
+          updatedAt: Date.now()
         });
 
         document.getElementById('multi-lobby-card').classList.add('hidden');
@@ -1712,22 +1752,68 @@
       multiState.unsub = onSnapshot(roomRef, (snap) => {
         if (!snap.exists()) {
           showToast("派對房間已解散", "info");
-          leaveMulti();
+          leaveMultiLocal();
           return;
         }
         const data = snap.data();
+
+        // 檢查房間是否已被關閉
+        if (data.status === 'closed') {
+          showToast(`【${data.closedBy || '房主'}】已關閉/解散房間！`, "info");
+          leaveMultiLocal();
+          return;
+        }
+
         digitCount = data.digitCount || digitCount;
 
-        if (data.status === 'waiting') {
-          renderMultiWaiting(data);
-        } else if (data.status === 'playing') {
+        // 確認主控身分
+        multiState.isHost = (data.hostId === multiState.myId);
+
+        // 1. 優先處理戰局結束狀態 (全體同時顯示結算)
+        if (data.status === 'finished' || data.winner) {
+          document.getElementById('multi-lobby-card').classList.add('hidden');
           document.getElementById('multi-waiting-card').classList.add('hidden');
           document.getElementById('multi-arena-card').classList.remove('hidden');
           renderMultiArena(data);
+          handleMultiWinner(data);
+          return;
         }
 
-        if (data.winner) {
-          handleMultiWinner(data);
+        // 2. 等待設定室狀態 (初次開房或再比一次)
+        if (data.status === 'waiting') {
+          multiState.hasEnded = false;
+          closeWinModal();
+          document.getElementById('multi-lobby-card').classList.add('hidden');
+          document.getElementById('multi-arena-card').classList.add('hidden');
+          document.getElementById('multi-waiting-card').classList.remove('hidden');
+          document.getElementById('multi-display-code').textContent = data.roomId;
+
+          if (multiState.isHost) {
+            document.getElementById('multi-host-controls').classList.remove('hidden');
+            document.getElementById('multi-guest-notice').classList.add('hidden');
+          } else {
+            document.getElementById('multi-host-controls').classList.add('hidden');
+            document.getElementById('multi-guest-notice').classList.remove('hidden');
+          }
+
+          // 繪製或更新 QR Code
+          const inviteURL = new URL(window.location.href);
+          inviteURL.searchParams.set('mode', 'multi');
+          inviteURL.searchParams.set('room', data.roomId);
+          drawQRCode('multi-qrcode-box', inviteURL.toString());
+
+          renderMultiWaiting(data);
+          return;
+        }
+
+        // 3. 正式對戰狀態 (全體一同進入對戰畫面)
+        if (data.status === 'playing') {
+          multiState.hasEnded = false;
+          closeWinModal();
+          document.getElementById('multi-lobby-card').classList.add('hidden');
+          document.getElementById('multi-waiting-card').classList.add('hidden');
+          document.getElementById('multi-arena-card').classList.remove('hidden');
+          renderMultiArena(data);
         }
       });
     }
@@ -1744,7 +1830,9 @@
             ${p.name.slice(0, 1)}
           </div>
           <span class="truncate text-slate-200">${p.name}</span>
-          ${p.isHost ? '<span class="text-[9px] text-amber-400 font-digital ml-auto">房主</span>' : ''}
+          ${p.isHost 
+            ? '<span class="text-[9px] text-amber-400 font-digital ml-auto">房主</span>' 
+            : '<span class="text-[9px] text-emerald-400 font-digital ml-auto">就緒</span>'}
         </div>
       `).join('');
     }
@@ -1766,22 +1854,43 @@
 
       const badge = document.getElementById('multi-turn-badge');
       const overlay = document.getElementById('multi-lock-overlay');
+      const overlayIcon = document.getElementById('multi-lock-icon');
       const overlayText = document.getElementById('multi-lock-text');
+      const endActions = document.getElementById('multi-end-actions');
 
-      if (isRace) {
-        overlay.classList.add('hidden');
-        badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30";
-        badge.textContent = "⚡ 全員競速中！誰先猜出誰獲勝！";
+      // 全體同時顯示結算畫面
+      if (data.status === 'finished' || data.winner) {
+        overlay.classList.remove('hidden');
+        if (overlayIcon) {
+          overlayIcon.className = "fa-solid fa-trophy text-3xl text-amber-400 mb-2";
+        }
+        if (overlayText) {
+          overlayText.textContent = `戰局已結算完成！冠軍：【${data.winner?.name || '特工'}】`;
+        }
+        if (endActions) {
+          endActions.classList.remove('hidden');
+        }
+        badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30";
+        badge.textContent = "🏆 戰局結束";
       } else {
-        if (isMyTurn) {
+        if (endActions) endActions.classList.add('hidden');
+        if (overlayIcon) overlayIcon.className = "fa-solid fa-hourglass-half text-3xl text-amber-400 animate-spin mb-2";
+
+        if (isRace) {
           overlay.classList.add('hidden');
-          badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
-          badge.textContent = "輪到你了！請送出線索";
+          badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30";
+          badge.textContent = "⚡ 全員競速中！誰先猜出誰獲勝！";
         } else {
-          overlay.classList.remove('hidden');
-          overlayText.textContent = `等待【${currentGuesser ? currentGuesser.name : '特工'}】思考中...`;
-          badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30";
-          badge.textContent = `輪到 ${currentGuesser ? currentGuesser.name : ''}`;
+          if (isMyTurn) {
+            overlay.classList.add('hidden');
+            badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+            badge.textContent = "輪到你了！請送出線索";
+          } else {
+            overlay.classList.remove('hidden');
+            overlayText.textContent = `等待【${currentGuesser ? currentGuesser.name : '特工'}】思考中...`;
+            badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30";
+            badge.textContent = `輪到 ${currentGuesser ? currentGuesser.name : ''}`;
+          }
         }
       }
 
@@ -1810,6 +1919,10 @@
     }
 
     function multiKeyPress(k) {
+      if (multiState.hasEnded) return;
+      const overlay = document.getElementById('multi-lock-overlay');
+      if (overlay && !overlay.classList.contains('hidden')) return;
+
       if (multiState.guess.length >= digitCount) return;
       if (multiState.guess.includes(k)) {
         playSound('error');
@@ -1822,6 +1935,10 @@
     }
 
     function multiKeyBack() {
+      if (multiState.hasEnded) return;
+      const overlay = document.getElementById('multi-lock-overlay');
+      if (overlay && !overlay.classList.contains('hidden')) return;
+
       if (multiState.guess.length === 0) return;
       multiState.guess = multiState.guess.slice(0, -1);
       renderSlots('multi-guess-slots', multiState.guess, digitCount);
@@ -1829,6 +1946,7 @@
     }
 
     async function submitMultiGuess() {
+      if (multiState.hasEnded) return;
       if (multiState.guess.length !== digitCount) {
         playSound('error');
         showToast(`請輸入滿 ${digitCount} 位數！`, 'error');
@@ -1839,6 +1957,11 @@
       const snap = await getDoc(roomRef);
       if (!snap.exists()) return;
       const data = snap.data();
+
+      if (data.status === 'finished' || data.winner) {
+        showToast("本局戰況已結束！", "info");
+        return;
+      }
 
       const isRace = (data.ruleType === 'race');
       if (!isRace) {
@@ -1861,7 +1984,8 @@
 
       const updatePayload = {
         history: arrayUnion(item),
-        turnIndex: (data.turnIndex || 0) + 1
+        turnIndex: (data.turnIndex || 0) + 1,
+        updatedAt: Date.now()
       };
 
       if (res.a === digitCount) {
@@ -1901,6 +2025,9 @@
     }
 
     function handleMultiWinner(data) {
+      if (multiState.hasEnded) return;
+      multiState.hasEnded = true;
+
       const isWinner = (data.winner?.id === multiState.myId);
       playSound('win');
       openWinModal(
@@ -1910,8 +2037,73 @@
       );
     }
 
-    function leaveMulti() {
-      if (multiState.unsub) multiState.unsub();
+    // 多人派對：再比一次 (進入設定/等待畫面，主控即時看到選擇再比登入的名單)
+    async function rematchMultiGame() {
+      if (!window.FB || !window.FB.isReady || !multiState.roomId) return;
+      closeWinModal();
+      multiState.hasEnded = false;
+      multiState.guess = '';
+
+      const { db, doc, getDoc, updateDoc } = window.FB;
+      const roomRef = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", multiState.roomId);
+
+      try {
+        const snap = await getDoc(roomRef);
+        if (!snap.exists()) return;
+        const data = snap.data();
+
+        const myObj = { id: multiState.myId, name: multiState.myName, isHost: multiState.isHost };
+
+        if (multiState.isHost) {
+          // 主控發起再比一次：重設房間狀態為 waiting，初始化新密碼，名單先包含主控自己
+          await updateDoc(roomRef, {
+            status: 'waiting',
+            turnIndex: 0,
+            secret: generateRandomSecret(digitCount),
+            history: [],
+            winner: null,
+            closedBy: null,
+            players: [myObj],
+            updatedAt: Date.now()
+          });
+          showToast("已重開戰局！等待特工登入名單", "success");
+        } else {
+          // 學生成員點選再比一次：
+          if (data.status === 'waiting') {
+            const existingPlayers = data.players || [];
+            if (!existingPlayers.some(p => p.id === multiState.myId)) {
+              await updateDoc(roomRef, {
+                players: [...existingPlayers, myObj],
+                updatedAt: Date.now()
+              });
+            }
+          } else {
+            // 若主控尚未點擊，學生成員先行響應重設回等待室，將主控與自己登入進名單
+            const hostObj = (data.players || []).find(p => p.isHost) || { id: data.hostId, name: '房主', isHost: true };
+            await updateDoc(roomRef, {
+              status: 'waiting',
+              turnIndex: 0,
+              secret: generateRandomSecret(digitCount),
+              history: [],
+              winner: null,
+              closedBy: null,
+              players: [hostObj, myObj],
+              updatedAt: Date.now()
+            });
+          }
+          showToast("已登入再比名單！等待房主開戰", "success");
+        }
+      } catch (err) {
+        showToast("再比一次失敗：" + err.message, "error");
+      }
+    }
+
+    function leaveMultiLocal() {
+      closeWinModal();
+      if (multiState.unsub) {
+        multiState.unsub();
+        multiState.unsub = null;
+      }
       multiState = {
         roomId: '',
         isHost: false,
@@ -1919,13 +2111,52 @@
         myName: '',
         guess: '',
         ruleType: 'turn',
-        unsub: null
+        unsub: null,
+        hasEnded: false
       };
 
       document.getElementById('multi-waiting-card').classList.add('hidden');
       document.getElementById('multi-arena-card').classList.add('hidden');
       document.getElementById('multi-lobby-card').classList.remove('hidden');
-      showToast("已退出派對房間");
+    }
+
+    async function leaveMulti() {
+      const targetRoomId = multiState.roomId;
+      const isHost = multiState.isHost;
+      const myId = multiState.myId;
+      const myName = multiState.myName || '學生';
+
+      leaveMultiLocal();
+      showToast("已退出多人派對房間");
+
+      if (targetRoomId && window.FB && window.FB.isReady) {
+        try {
+          const { db, doc, getDoc, updateDoc } = window.FB;
+          const roomRef = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", targetRoomId);
+
+          if (isHost) {
+            // 房主離開 -> 關閉整個房間，全員連動退出
+            await updateDoc(roomRef, {
+              status: 'closed',
+              closedBy: myName,
+              updatedAt: Date.now()
+            });
+          } else {
+            // 學生成員離開 -> 從名單中移除自己，讓主控螢幕名單即時更新
+            const snap = await getDoc(roomRef);
+            if (snap.exists()) {
+              const data = snap.data();
+              const updatedPlayers = (data.players || []).filter(p => p.id !== myId);
+              await updateDoc(roomRef, {
+                players: updatedPlayers,
+                updatedAt: Date.now()
+              });
+            }
+          }
+        } catch (e) {
+          // 忽略已刪除或連線關閉
+        }
+      }
     }
 
     // 勝利 Modal 控制
