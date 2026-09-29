@@ -1015,7 +1015,7 @@
         showToast("Firebase 尚未連線，請檢查網路！", "error");
         return;
       }
-      const pName = document.getElementById('duel-name-input').value.trim() || '特工 Alpha';
+      const pName = document.getElementById('duel-name-input').value.trim() || '學生';
       const code = generate4DigitCode();
       const { db, doc, setDoc, user } = window.FB;
 
@@ -1030,6 +1030,7 @@
         digitCount,
         status: 'waiting',
         turn: 'p1',
+        p1PendingWin: false,
         p1: { uid: user.uid, sessionToken: duelState.sessionToken, name: pName, secret: '', ready: false, history: [] },
         p2: null,
         winner: null,
@@ -1067,7 +1068,7 @@
         showToast("請輸入完整的 4 位純數字代碼！", "error");
         return;
       }
-      const pName = document.getElementById('duel-name-input').value.trim() || '特工 Beta';
+      const pName = document.getElementById('duel-name-input').value.trim() || '學生';
       const { db, doc, getDoc, updateDoc, user } = window.FB;
       const roomRef = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", code);
 
@@ -1276,12 +1277,28 @@
       const lockOverlay = document.getElementById('duel-lock-overlay');
       const badge = document.getElementById('duel-turn-badge');
 
+      // 檢查先手是否已達成 4A，等待後手最後一次追平機會
+      const isP1Pending = !!(data.p1PendingWin && data.status !== 'finished');
+
       if (data.status === 'finished' || data.winner) {
         lockOverlay.classList.remove('hidden');
         const lockText = lockOverlay.querySelector('p');
         if (lockText) lockText.textContent = "戰局已結算完成！";
         badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30";
         badge.textContent = "🏆 戰局結束";
+      } else if (isP1Pending) {
+        // 先手已猜中，後手擁有最後一搏的追平機會
+        if (duelState.role === 'p2') {
+          lockOverlay.classList.add('hidden');
+          badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-rose-500/20 text-rose-400 border border-rose-500/40 animate-pulse";
+          badge.textContent = "🔥 對手已破譯！這是你的最後機會，猜中即可絕平！";
+        } else {
+          lockOverlay.classList.remove('hidden');
+          const lockText = lockOverlay.querySelector('p');
+          if (lockText) lockText.textContent = `你已破譯成功！等待對手【${oppName || '後手'}】最後一擊追平...`;
+          badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30";
+          badge.textContent = `⏳ 你已達成！等待對手最後追平...`;
+        }
       } else if (isMyTurn) {
         lockOverlay.classList.add('hidden');
         badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
@@ -1368,17 +1385,35 @@
         updatePayload['p2.history'] = [item, ...(data.p2?.history || [])];
       }
 
-      // 檢查勝負狀態
-      if (res.a === digitCount) {
-        // 若對方此前也已經猜出 4A0B（步數相同），則判定為平手
-        const oppHistory = (duelState.role === 'p1') ? data.p2?.history : data.p1?.history;
-        const oppAlreadySolved = oppHistory && oppHistory.length > 0 && oppHistory[0].a === digitCount;
-        if (oppAlreadySolved) {
-          updatePayload.winner = 'draw';
-        } else {
-          updatePayload.winner = duelState.role;
+      // 公平回合規則判斷 (Equal Turn Rule)
+      if (duelState.role === 'p1') {
+        // 先手回合
+        if (res.a === digitCount) {
+          // 先手猜中了！保留給後手最後一次追平機會，暫不結束遊戲
+          updatePayload.p1PendingWin = true;
         }
-        updatePayload.status = 'finished';
+      } else {
+        // 後手回合 (p2)
+        const p1AlreadySolved = !!data.p1PendingWin;
+
+        if (p1AlreadySolved) {
+          // 先手先前已猜中，此為後手的最後一搏機會
+          if (res.a === digitCount) {
+            // 後手也猜中 => 雙方在同輪次均破譯，宣告平手！
+            updatePayload.winner = 'draw';
+          } else {
+            // 後手未能追平 => 先手獲勝！
+            updatePayload.winner = 'p1';
+          }
+          updatePayload.status = 'finished';
+        } else {
+          // 先手先前未猜中
+          if (res.a === digitCount) {
+            // 後手在同等步數下率先破譯 => 後手獲勝！
+            updatePayload.winner = 'p2';
+            updatePayload.status = 'finished';
+          }
+        }
       }
 
       duelState.guess = '';
@@ -1483,7 +1518,7 @@
         showToast("Firebase 尚未連線，請檢查網路！", "error");
         return;
       }
-      const pName = document.getElementById('multi-name-input').value.trim() || '指揮官';
+      const pName = document.getElementById('multi-name-input').value.trim() || '學生';
       const ruleTypeEl = document.querySelector('input[name="multi-rule-type"]:checked');
       const ruleType = ruleTypeEl ? ruleTypeEl.value : 'turn';
       const code = generate4DigitCode();
@@ -1542,7 +1577,7 @@
         showToast("請輸入完整的 4 位純數字代碼！", "error");
         return;
       }
-      const pName = document.getElementById('multi-name-input').value.trim() || '特工';
+      const pName = document.getElementById('multi-name-input').value.trim() || '學生';
       const { db, doc, getDoc, updateDoc, arrayUnion } = window.FB;
       const roomRef = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", code);
 
