@@ -998,6 +998,7 @@
     let duelState = {
       roomId: '',
       role: '', // 'p1' 或 'p2'
+      myUid: '',
       myName: '',
       mySecret: '',
       guess: '',
@@ -1009,16 +1010,17 @@
     }
 
     async function createDuelRoom() {
-      if (!window.FB || !window.FB.isReady) {
+      if (!window.FB || !window.FB.isReady || !window.FB.user) {
         showToast("Firebase 尚未連線，請檢查網路！", "error");
         return;
       }
       const pName = document.getElementById('duel-name-input').value.trim() || '特工 Alpha';
       const code = generate4DigitCode();
-      const { db, doc, setDoc } = window.FB;
+      const { db, doc, setDoc, user } = window.FB;
 
       duelState.roomId = code;
       duelState.role = 'p1';
+      duelState.myUid = user.uid;
       duelState.myName = pName;
       duelState.mySecret = '';
       duelState.guess = '';
@@ -1028,7 +1030,7 @@
         digitCount,
         status: 'waiting',
         turn: 'p1',
-        p1: { name: pName, secret: '', ready: false, history: [] },
+        p1: { uid: user.uid, name: pName, secret: '', ready: false, history: [] },
         p2: null,
         winner: null,
         updatedAt: Date.now()
@@ -1056,7 +1058,7 @@
     }
 
     async function joinDuelRoom() {
-      if (!window.FB || !window.FB.isReady) {
+      if (!window.FB || !window.FB.isReady || !window.FB.user) {
         showToast("Firebase 尚未連線，請檢查網路！", "error");
         return;
       }
@@ -1066,7 +1068,7 @@
         return;
       }
       const pName = document.getElementById('duel-name-input').value.trim() || '特工 Beta';
-      const { db, doc, getDoc, updateDoc } = window.FB;
+      const { db, doc, getDoc, updateDoc, user } = window.FB;
       const roomRef = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", code);
 
       try {
@@ -1076,20 +1078,21 @@
           return;
         }
         const data = snap.data();
-        if (data.p2 && data.p2.name) {
+        if (data.p2 && data.p2.uid && data.p2.uid !== user.uid) {
           showToast("此房間已有挑戰者加入！", "error");
           return;
         }
 
         duelState.roomId = code;
         duelState.role = 'p2';
+        duelState.myUid = user.uid;
         duelState.myName = pName;
         duelState.mySecret = '';
         duelState.guess = '';
         digitCount = data.digitCount || digitCount;
 
         await updateDoc(roomRef, {
-          p2: { name: pName, secret: '', ready: false, history: [] },
+          p2: { uid: user.uid, name: pName, secret: '', ready: false, history: [] },
           status: 'setup',
           updatedAt: Date.now()
         });
@@ -1104,7 +1107,7 @@
 
     function listenDuelRoom(code) {
       if (duelState.unsub) duelState.unsub();
-      const { db, doc, onSnapshot, updateDoc } = window.FB;
+      const { db, doc, onSnapshot, updateDoc, user } = window.FB;
       const roomRef = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", code);
 
       duelState.unsub = onSnapshot(roomRef, (snap) => {
@@ -1116,13 +1119,20 @@
         const data = snap.data();
         digitCount = data.digitCount || digitCount;
 
+        // 根據實際 user.uid 自動校正角色，防止雙方身分錯置
+        if (user && data.p1 && data.p1.uid === user.uid) {
+          duelState.role = 'p1';
+        } else if (user && data.p2 && data.p2.uid === user.uid) {
+          duelState.role = 'p2';
+        }
+
         // 即時更新雙方出題狀態指示燈
         updateDuelReadyIndicator(data);
 
         const isP1Ready = data.p1 && data.p1.ready;
         const isP2Ready = data.p2 && data.p2.ready;
 
-        // 關鍵修復：只要雙方皆已鎖定密碼，兩端平板皆能觸發並自動切換為對戰
+        // 只要雙方皆已鎖定密碼，兩端平板皆能觸發並自動切換為對戰
         if (isP1Ready && isP2Ready) {
           if (data.status !== 'playing' && data.status !== 'finished') {
             updateDoc(roomRef, { status: 'playing', updatedAt: Date.now() }).catch(() => {});
@@ -1240,85 +1250,16 @@
       playSound('click');
       showToast("密碼已鎖定！等待對手出題完成即可開戰");
     }
-        const data = snap.data();
-        digitCount = data.digitCount || digitCount;
-
-        if (data.status === 'setup') {
-          document.getElementById('duel-lobby-card').classList.add('hidden');
-          document.getElementById('duel-waiting-card').classList.add('hidden');
-          document.getElementById('duel-secret-card').classList.remove('hidden');
-          renderSlots('duel-secret-slots', duelState.mySecret, digitCount);
-        } else if (data.status === 'playing') {
-          document.getElementById('duel-secret-card').classList.add('hidden');
-          document.getElementById('duel-arena-card').classList.remove('hidden');
-          renderDuelArena(data);
-        }
-
-        if (data.winner) {
-          handleDuelWinner(data);
-        }
-      });
-    }
-
-    function duelSecretPress(k) {
-      if (duelState.mySecret.length >= digitCount) return;
-      if (duelState.mySecret.includes(k)) {
-        playSound('error');
-        showToast(`出題數字 ${k} 不可重複！`, "error");
-        return;
-      }
-      duelState.mySecret += k;
-      renderSlots('duel-secret-slots', duelState.mySecret, digitCount);
-      playSound('click');
-    }
-
-    function randomDuelSecret() {
-      duelState.mySecret = generateRandomSecret(digitCount);
-      renderSlots('duel-secret-slots', duelState.mySecret, digitCount);
-      playSound('click');
-    }
-
-    function clearDuelSecret() {
-      duelState.mySecret = '';
-      renderSlots('duel-secret-slots', '', digitCount);
-      playSound('delete');
-    }
-
-    async function lockDuelSecret() {
-      if (duelState.mySecret.length !== digitCount) {
-        playSound('error');
-        showToast(`出題密碼必須為 ${digitCount} 位！`, "error");
-        return;
-      }
-      const { db, doc, getDoc, updateDoc } = window.FB;
-      const roomRef = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", duelState.roomId);
-
-      document.getElementById('btn-lock-duel-secret').classList.add('hidden');
-      document.getElementById('duel-secret-notice').classList.remove('hidden');
-
-      const snap = await getDoc(roomRef);
-      if (!snap.exists()) return;
-      const data = snap.data();
-
-      const updatePayload = {};
-      if (duelState.role === 'p1') {
-        updatePayload['p1.secret'] = duelState.mySecret;
-        updatePayload['p1.ready'] = true;
-        if (data.p2 && data.p2.ready) updatePayload.status = 'playing';
-      } else {
-        updatePayload['p2.secret'] = duelState.mySecret;
-        updatePayload['p2.ready'] = true;
-        if (data.p1 && data.p1.ready) updatePayload.status = 'playing';
-      }
-
-      await updateDoc(roomRef, updatePayload);
-      playSound('click');
-    }
 
     function renderDuelArena(data) {
       document.getElementById('duel-arena-room-tag').textContent = data.roomId;
-      document.getElementById('duel-title-p1').textContent = `${data.p1?.name || '玩家1'} ${duelState.role === 'p1' ? '(我)' : ''}`;
-      document.getElementById('duel-title-p2').textContent = `${data.p2?.name || '玩家2'} ${duelState.role === 'p2' ? '(我)' : ''}`;
+      
+      const myName = (duelState.role === 'p1') ? data.p1?.name : data.p2?.name;
+      const oppName = (duelState.role === 'p1') ? data.p2?.name : data.p1?.name;
+
+      // 讓每台平板的左欄固定為「我方進度」，右欄固定為「對手進度」
+      document.getElementById('duel-title-p1').textContent = `${myName || '我'} (我方)`;
+      document.getElementById('duel-title-p2').textContent = `${oppName || '對手'} (對手)`;
 
       const isMyTurn = (data.turn === duelState.role);
       const lockOverlay = document.getElementById('duel-lock-overlay');
@@ -1331,7 +1272,7 @@
       } else {
         lockOverlay.classList.remove('hidden');
         badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30";
-        badge.textContent = "對手思考猜測中...";
+        badge.textContent = `等待【${oppName || '對手'}】思考中...`;
       }
 
       renderSlots('duel-guess-slots', duelState.guess, digitCount);
@@ -1380,11 +1321,11 @@
       const item = { guess: duelState.guess, a: res.a, b: res.b, time: Date.now() };
       const nextTurn = (duelState.role === 'p1') ? 'p2' : 'p1';
 
-      const updatePayload = { turn: nextTurn };
+      const updatePayload = { turn: nextTurn, updatedAt: Date.now() };
       if (duelState.role === 'p1') {
-        updatePayload['p1.history'] = [item, ...(data.p1.history || [])];
+        updatePayload['p1.history'] = [item, ...(data.p1?.history || [])];
       } else {
-        updatePayload['p2.history'] = [item, ...(data.p2.history || [])];
+        updatePayload['p2.history'] = [item, ...(data.p2?.history || [])];
       }
 
       if (res.a === digitCount) {
@@ -1414,13 +1355,18 @@
           </div>
         `).join('');
       };
-      render(data.p1?.history, 'duel-history-p1');
-      render(data.p2?.history, 'duel-history-p2');
+
+      // 依據自己角色動態對應：左欄顯示「我方猜測」，右欄顯示「對手猜測」
+      const myHistory = (duelState.role === 'p1') ? data.p1?.history : data.p2?.history;
+      const oppHistory = (duelState.role === 'p1') ? data.p2?.history : data.p1?.history;
+
+      render(myHistory, 'duel-history-p1');
+      render(oppHistory, 'duel-history-p2');
     }
 
     function handleDuelWinner(data) {
       const isMe = (data.winner === duelState.role);
-      const oppSecret = (duelState.role === 'p1') ? data.p2.secret : data.p1.secret;
+      const oppSecret = (duelState.role === 'p1') ? data.p2?.secret : data.p1?.secret;
       playSound('win');
       openWinModal(
         isMe ? "你贏了！率先破譯對手密碼" : "對手率先解開密碼！",
@@ -1431,7 +1377,7 @@
 
     function leaveDuel() {
       if (duelState.unsub) duelState.unsub();
-      duelState = { roomId: '', role: '', myName: '', mySecret: '', guess: '', unsub: null };
+      duelState = { roomId: '', role: '', myUid: '', myName: '', mySecret: '', guess: '', unsub: null };
 
       document.getElementById('duel-waiting-card').classList.add('hidden');
       document.getElementById('duel-secret-card').classList.add('hidden');
