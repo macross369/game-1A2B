@@ -26,6 +26,21 @@
           fontFamily: {
             sans: ['Noto Sans TC', 'sans-serif'],
             digital: ['Chakra Petch', 'monospace'],
+          },
+          colors: {
+            meadow: {
+              50: '#f2fbf5',
+              100: '#e1f6e9',
+              200: '#c5eed4',
+              300: '#97deb4',
+              400: '#62c68e',
+              500: '#3ba970',
+              600: '#2b8858',
+              700: '#246c48',
+              800: '#20563b',
+              900: '#1b4732',
+              950: '#0d281c',
+            }
           }
         }
       }
@@ -37,79 +52,82 @@
       touch-action: manipulation;
       user-select: none;
       -webkit-user-select: none;
+      background-image: radial-gradient(#62c68e18 1px, transparent 1px), radial-gradient(#3ba97012 1px, transparent 1px);
+      background-size: 24px 24px;
+      background-position: 0 0, 12px 12px;
     }
     .custom-scroll::-webkit-scrollbar {
       width: 6px;
       height: 6px;
     }
     .custom-scroll::-webkit-scrollbar-track {
-      background: rgba(30, 41, 59, 0.5);
+      background: rgba(226, 248, 235, 0.6);
       border-radius: 4px;
     }
     .custom-scroll::-webkit-scrollbar-thumb {
-      background: rgba(99, 102, 241, 0.5);
+      background: rgba(59, 169, 112, 0.4);
       border-radius: 4px;
     }
     .custom-scroll::-webkit-scrollbar-thumb:hover {
-      background: rgba(99, 102, 241, 0.8);
+      background: rgba(43, 136, 88, 0.7);
     }
     .btn-press:active {
       transform: scale(0.95);
     }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-indigo-500 selection:text-white">
+<body class="bg-gradient-to-b from-emerald-50 via-teal-50/50 to-green-100/60 text-slate-800 min-h-screen flex flex-col font-sans antialiased selection:bg-emerald-500 selection:text-white">
 
-  <!-- 頂部導航列 -->
-  <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40 px-3 py-2.5 transition-all">
+  <!-- 頂部導航列 (清新草原質感) -->
+  <header class="bg-white/85 backdrop-blur-md border-b border-emerald-200/80 sticky top-0 z-40 px-3 py-2.5 transition-all shadow-sm">
     <div class="max-w-4xl mx-auto flex items-center justify-between gap-2">
       <div class="flex items-center gap-2.5">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white font-digital font-bold text-base">
-          1A
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-green-400 flex items-center justify-center shadow-md shadow-emerald-600/20 text-white font-digital font-bold text-base">
+          <i class="fa-solid fa-seedling text-sm"></i>
         </div>
         <div>
-          <h1 class="text-base sm:text-lg font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">
+          <h1 class="text-base sm:text-lg font-black tracking-tight bg-gradient-to-r from-emerald-900 via-emerald-800 to-teal-700 bg-clip-text text-transparent">
             1A2B 數智對決
           </h1>
-          <p class="text-[10px] text-slate-400 font-digital tracking-wider hidden sm:block">跨平板即時競技系統</p>
+          <p class="text-[10px] text-emerald-700/80 font-digital tracking-wider hidden sm:block">🌿 清新草原跨平板競技版</p>
         </div>
       </div>
 
       <div class="flex items-center gap-2">
         <!-- 難度位數選擇 (2~4位) -->
-        <div class="flex items-center bg-slate-800 rounded-xl p-1 border border-slate-700">
-          <span class="text-[11px] text-slate-400 px-1.5 hidden md:inline">位數:</span>
-          <button id="btn-digit-2" onclick="setDigitCount(2)" class="px-2 py-0.5 text-xs font-digital font-bold rounded-lg transition text-slate-400">2碼</button>
-          <button id="btn-digit-3" onclick="setDigitCount(3)" class="px-2 py-0.5 text-xs font-digital font-bold rounded-lg transition text-slate-400">3碼</button>
-          <button id="btn-digit-4" onclick="setDigitCount(4)" class="px-2 py-0.5 text-xs font-digital font-bold rounded-lg transition bg-indigo-600 text-white shadow">4碼</button>
+        <div class="flex items-center bg-emerald-100/80 rounded-xl p-1 border border-emerald-200 shadow-inner">
+          <span class="text-[11px] text-emerald-800 font-bold px-1.5 hidden md:inline">位數:</span>
+          <button id="btn-digit-2" onclick="setDigitCount(2)" class="px-2 py-0.5 text-xs font-digital font-bold rounded-lg transition text-emerald-700 hover:text-emerald-900">2碼</button>
+          <button id="btn-digit-3" onclick="setDigitCount(3)" class="px-2 py-0.5 text-xs font-digital font-bold rounded-lg transition text-emerald-700 hover:text-emerald-900">3碼</button>
+          <button id="btn-digit-4" onclick="setDigitCount(4)" class="px-2 py-0.5 text-xs font-digital font-bold rounded-lg transition bg-emerald-600 text-white shadow-sm">4碼</button>
         </div>
 
         <!-- 音效開關 -->
-        <button id="sound-btn" onclick="toggleSound()" class="w-8 h-8 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition">
+        <button id="sound-btn" onclick="toggleSound()" class="w-8 h-8 rounded-xl bg-white border border-emerald-200 text-emerald-800 hover:text-emerald-900 hover:bg-emerald-50 flex items-center justify-center transition shadow-sm">
           <i class="fa-solid fa-volume-high text-xs"></i>
         </button>
 
         <!-- Firebase 狀態指示燈 -->
-        <button onclick="openDiagnosticModal()" class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-digital bg-slate-800 border border-slate-700 hover:border-slate-600 transition">
+        <button onclick="openDiagnosticModal()" class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-digital bg-white border border-emerald-200 hover:border-emerald-300 transition shadow-sm">
           <span id="fb-dot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-          <span id="fb-status-text" class="text-slate-300">連線中</span>
+          <span id="fb-status-text" class="text-emerald-900 font-medium">連線中</span>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- 模式切換導覽列 -->
+  <!-- 模式切換導覽列 (綠意花園分頁) -->
   <nav class="max-w-4xl mx-auto w-full px-3 pt-3 pb-1">
-    <div class="grid grid-cols-3 gap-1.5 p-1 bg-slate-900 border border-slate-800 rounded-2xl max-w-md mx-auto shadow-md">
-      <button onclick="switchMode('single')" id="tab-single" class="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs sm:text-sm font-bold transition bg-indigo-600 text-white shadow">
+    <div class="grid grid-cols-3 gap-1.5 p-1 bg-white/90 border border-emerald-200 rounded-2xl max-w-md mx-auto shadow-sm">
+      <button onclick="switchMode('single')" id="tab-single" class="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs sm:text-sm font-bold transition bg-emerald-600 text-white shadow-sm">
         <i class="fa-solid fa-user"></i>
         <span>個人模式</span>
       </button>
-      <button onclick="switchMode('duel')" id="tab-duel" class="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs sm:text-sm font-bold transition text-slate-400 hover:text-slate-200">
+      <button onclick="switchMode('duel')" id="tab-duel" class="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs sm:text-sm font-bold transition text-emerald-800 hover:text-emerald-950 hover:bg-emerald-50">
         <i class="fa-solid fa-user-ninja"></i>
         <span>雙人對決</span>
       </button>
-      <button onclick="switchMode('multi')" id="tab-multi" class="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs sm:text-sm font-bold transition text-slate-400 hover:text-slate-200">
+      <button onclick="switchMode('multi')" id="tab-multi" class="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs sm:text-sm font-bold transition text-emerald-800 hover:text-emerald-950 hover:bg-emerald-50">
         <i class="fa-solid fa-users"></i>
         <span>多人派對</span>
       </button>
@@ -121,36 +139,36 @@
 
     <!-- ================= 1. 個人闖關模式 ================= -->
     <section id="mode-single-section" class="w-full space-y-4">
-      <div id="single-start-view" class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 text-center space-y-4 shadow-xl">
-        <div class="w-16 h-16 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto text-2xl border border-indigo-500/20">
-          <i class="fa-solid fa-play"></i>
+      <div id="single-start-view" class="bg-white/95 border border-emerald-200/90 rounded-3xl p-6 sm:p-8 text-center space-y-4 shadow-lg shadow-emerald-900/5">
+        <div class="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-2xl border border-emerald-200">
+          <i class="fa-solid fa-clover"></i>
         </div>
         <div>
-          <h2 class="text-xl font-bold text-white">準備挑戰 <span class="digit-tag text-indigo-400 font-digital">4</span> 位數密碼</h2>
-          <p class="text-xs sm:text-sm text-slate-400 mt-1">數字不重複，點擊下方按鈕啟動計時與隨機出題！</p>
+          <h2 class="text-xl font-bold text-emerald-950">準備漫步挑戰 <span class="digit-tag text-emerald-600 font-digital">4</span> 位數密碼</h2>
+          <p class="text-xs sm:text-sm text-emerald-800/80 mt-1">數字不重複，點擊下方按鈕啟動計時與隨機出題！</p>
         </div>
-        <button onclick="startSingleGame()" class="px-8 py-3.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold rounded-2xl shadow-lg shadow-indigo-600/30 text-base active:scale-95 transition">
-          <i class="fa-solid fa-bolt mr-2"></i>開始遊戲
+        <button onclick="startSingleGame()" class="px-8 py-3.5 bg-gradient-to-r from-emerald-600 via-teal-600 to-green-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-2xl shadow-lg shadow-emerald-600/30 text-base active:scale-95 transition">
+          <i class="fa-solid fa-leaf mr-2"></i>開始遊戲
         </button>
       </div>
 
       <div id="single-play-view" class="hidden space-y-4">
-        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 sm:p-4 flex items-center justify-between flex-wrap gap-2">
+        <div class="bg-white/95 border border-emerald-200 rounded-2xl p-3 sm:p-4 flex items-center justify-between flex-wrap gap-2 shadow-sm">
           <div class="flex items-center gap-4 sm:gap-6">
             <div>
-              <span class="text-[10px] text-slate-400 block">耗費時間</span>
-              <span id="single-timer" class="font-digital text-lg sm:text-xl font-bold text-amber-400">00:00</span>
+              <span class="text-[10px] text-emerald-700/80 font-bold block">耗費時間</span>
+              <span id="single-timer" class="font-digital text-lg sm:text-xl font-bold text-amber-600">00:00</span>
             </div>
             <div>
-              <span class="text-[10px] text-slate-400 block">嘗試步數</span>
-              <span id="single-steps" class="font-digital text-lg sm:text-xl font-bold text-indigo-400">0 次</span>
+              <span class="text-[10px] text-emerald-700/80 font-bold block">嘗試步數</span>
+              <span id="single-steps" class="font-digital text-lg sm:text-xl font-bold text-emerald-700">0 次</span>
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <button onclick="giveUpSingleGame()" class="px-3 py-1.5 rounded-xl border border-rose-500/30 text-rose-400 text-xs hover:bg-rose-500/10 transition">
+            <button onclick="giveUpSingleGame()" class="px-3 py-1.5 rounded-xl border border-rose-300 text-rose-600 bg-rose-50/60 text-xs hover:bg-rose-100 transition">
               <i class="fa-regular fa-eye mr-1"></i>看解答
             </button>
-            <button onclick="startSingleGame()" class="px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-200 text-xs hover:bg-slate-700 transition">
+            <button onclick="startSingleGame()" class="px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs hover:bg-emerald-100 transition font-bold">
               <i class="fa-solid fa-rotate-right mr-1"></i>重開一局
             </button>
           </div>
@@ -158,48 +176,48 @@
 
         <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
           <div class="md:col-span-7 space-y-4">
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-lg flex flex-col items-center">
+            <div class="bg-white/95 border border-emerald-200 rounded-3xl p-5 shadow-sm flex flex-col items-center">
               <div id="single-slots-box" class="flex gap-2.5 sm:gap-3 my-2 justify-center"></div>
-              <p class="text-xs text-slate-400 mt-2">請輸入 <span class="digit-tag font-digital">4</span> 個不重複數字</p>
+              <p class="text-xs text-emerald-700 mt-2 font-medium">請輸入 <span class="digit-tag font-digital font-bold text-emerald-800">4</span> 個不重複數字</p>
             </div>
 
-            <!-- 推理草稿盤 -->
-            <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-3.5 shadow-md">
-              <div class="flex items-center justify-between mb-2.5 px-1 text-[11px] text-slate-400">
-                <span class="font-bold"><i class="fa-solid fa-pencil mr-1 text-indigo-400"></i>推理草稿 (點擊標記)</span>
-                <span>白:未知 | 綠:確認 | 灰:排除</span>
+            <!-- 推理草稿盤 (清新綠調) -->
+            <div class="bg-white/95 border border-emerald-200 rounded-3xl p-3.5 shadow-sm">
+              <div class="flex items-center justify-between mb-2.5 px-1 text-[11px] text-emerald-800">
+                <span class="font-bold"><i class="fa-solid fa-pencil mr-1 text-emerald-600"></i>推理草稿 (點擊標記)</span>
+                <span class="text-emerald-700 font-medium">白:未知 | 綠:確認 | 灰:排除</span>
               </div>
               <div class="grid grid-cols-10 gap-1 text-center font-digital">
-                <button onclick="toggleSingleNote(0)" id="snote-0" class="h-9 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-sm">0</button>
-                <button onclick="toggleSingleNote(1)" id="snote-1" class="h-9 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-sm">1</button>
-                <button onclick="toggleSingleNote(2)" id="snote-2" class="h-9 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-sm">2</button>
-                <button onclick="toggleSingleNote(3)" id="snote-3" class="h-9 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-sm">3</button>
-                <button onclick="toggleSingleNote(4)" id="snote-4" class="h-9 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-sm">4</button>
-                <button onclick="toggleSingleNote(5)" id="snote-5" class="h-9 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-sm">5</button>
-                <button onclick="toggleSingleNote(6)" id="snote-6" class="h-9 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-sm">6</button>
-                <button onclick="toggleSingleNote(7)" id="snote-7" class="h-9 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-sm">7</button>
-                <button onclick="toggleSingleNote(8)" id="snote-8" class="h-9 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-sm">8</button>
-                <button onclick="toggleSingleNote(9)" id="snote-9" class="h-9 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-sm">9</button>
+                <button onclick="toggleSingleNote(0)" id="snote-0" class="h-9 rounded-xl bg-emerald-50/70 border border-emerald-200 text-emerald-900 font-bold text-sm">0</button>
+                <button onclick="toggleSingleNote(1)" id="snote-1" class="h-9 rounded-xl bg-emerald-50/70 border border-emerald-200 text-emerald-900 font-bold text-sm">1</button>
+                <button onclick="toggleSingleNote(2)" id="snote-2" class="h-9 rounded-xl bg-emerald-50/70 border border-emerald-200 text-emerald-900 font-bold text-sm">2</button>
+                <button onclick="toggleSingleNote(3)" id="snote-3" class="h-9 rounded-xl bg-emerald-50/70 border border-emerald-200 text-emerald-900 font-bold text-sm">3</button>
+                <button onclick="toggleSingleNote(4)" id="snote-4" class="h-9 rounded-xl bg-emerald-50/70 border border-emerald-200 text-emerald-900 font-bold text-sm">4</button>
+                <button onclick="toggleSingleNote(5)" id="snote-5" class="h-9 rounded-xl bg-emerald-50/70 border border-emerald-200 text-emerald-900 font-bold text-sm">5</button>
+                <button onclick="toggleSingleNote(6)" id="snote-6" class="h-9 rounded-xl bg-emerald-50/70 border border-emerald-200 text-emerald-900 font-bold text-sm">6</button>
+                <button onclick="toggleSingleNote(7)" id="snote-7" class="h-9 rounded-xl bg-emerald-50/70 border border-emerald-200 text-emerald-900 font-bold text-sm">7</button>
+                <button onclick="toggleSingleNote(8)" id="snote-8" class="h-9 rounded-xl bg-emerald-50/70 border border-emerald-200 text-emerald-900 font-bold text-sm">8</button>
+                <button onclick="toggleSingleNote(9)" id="snote-9" class="h-9 rounded-xl bg-emerald-50/70 border border-emerald-200 text-emerald-900 font-bold text-sm">9</button>
               </div>
             </div>
 
-            <!-- 虛擬按鍵 -->
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-3 sm:p-4 shadow-lg">
+            <!-- 虛擬按鍵 (草原系白綠鍵盤) -->
+            <div class="bg-white/95 border border-emerald-200 rounded-3xl p-3 sm:p-4 shadow-sm">
               <div class="grid grid-cols-3 gap-2">
-                <button onclick="singleKeyPress('1')" class="h-12 rounded-2xl bg-slate-800 border border-slate-700 text-xl font-digital font-bold text-white hover:bg-slate-700 active:scale-95 transition">1</button>
-                <button onclick="singleKeyPress('2')" class="h-12 rounded-2xl bg-slate-800 border border-slate-700 text-xl font-digital font-bold text-white hover:bg-slate-700 active:scale-95 transition">2</button>
-                <button onclick="singleKeyPress('3')" class="h-12 rounded-2xl bg-slate-800 border border-slate-700 text-xl font-digital font-bold text-white hover:bg-slate-700 active:scale-95 transition">3</button>
-                <button onclick="singleKeyPress('4')" class="h-12 rounded-2xl bg-slate-800 border border-slate-700 text-xl font-digital font-bold text-white hover:bg-slate-700 active:scale-95 transition">4</button>
-                <button onclick="singleKeyPress('5')" class="h-12 rounded-2xl bg-slate-800 border border-slate-700 text-xl font-digital font-bold text-white hover:bg-slate-700 active:scale-95 transition">5</button>
-                <button onclick="singleKeyPress('6')" class="h-12 rounded-2xl bg-slate-800 border border-slate-700 text-xl font-digital font-bold text-white hover:bg-slate-700 active:scale-95 transition">6</button>
-                <button onclick="singleKeyPress('7')" class="h-12 rounded-2xl bg-slate-800 border border-slate-700 text-xl font-digital font-bold text-white hover:bg-slate-700 active:scale-95 transition">7</button>
-                <button onclick="singleKeyPress('8')" class="h-12 rounded-2xl bg-slate-800 border border-slate-700 text-xl font-digital font-bold text-white hover:bg-slate-700 active:scale-95 transition">8</button>
-                <button onclick="singleKeyPress('9')" class="h-12 rounded-2xl bg-slate-800 border border-slate-700 text-xl font-digital font-bold text-white hover:bg-slate-700 active:scale-95 transition">9</button>
-                <button onclick="singleKeyBack()" class="h-12 rounded-2xl bg-slate-800 border border-slate-700 text-amber-400 text-lg hover:bg-slate-700 active:scale-95 transition flex items-center justify-center">
+                <button onclick="singleKeyPress('1')" class="h-12 rounded-2xl bg-gradient-to-b from-white to-emerald-50/60 border border-emerald-200 text-xl font-digital font-bold text-emerald-950 hover:bg-emerald-100/70 active:scale-95 transition shadow-sm">1</button>
+                <button onclick="singleKeyPress('2')" class="h-12 rounded-2xl bg-gradient-to-b from-white to-emerald-50/60 border border-emerald-200 text-xl font-digital font-bold text-emerald-950 hover:bg-emerald-100/70 active:scale-95 transition shadow-sm">2</button>
+                <button onclick="singleKeyPress('3')" class="h-12 rounded-2xl bg-gradient-to-b from-white to-emerald-50/60 border border-emerald-200 text-xl font-digital font-bold text-emerald-950 hover:bg-emerald-100/70 active:scale-95 transition shadow-sm">3</button>
+                <button onclick="singleKeyPress('4')" class="h-12 rounded-2xl bg-gradient-to-b from-white to-emerald-50/60 border border-emerald-200 text-xl font-digital font-bold text-emerald-950 hover:bg-emerald-100/70 active:scale-95 transition shadow-sm">4</button>
+                <button onclick="singleKeyPress('5')" class="h-12 rounded-2xl bg-gradient-to-b from-white to-emerald-50/60 border border-emerald-200 text-xl font-digital font-bold text-emerald-950 hover:bg-emerald-100/70 active:scale-95 transition shadow-sm">5</button>
+                <button onclick="singleKeyPress('6')" class="h-12 rounded-2xl bg-gradient-to-b from-white to-emerald-50/60 border border-emerald-200 text-xl font-digital font-bold text-emerald-950 hover:bg-emerald-100/70 active:scale-95 transition shadow-sm">6</button>
+                <button onclick="singleKeyPress('7')" class="h-12 rounded-2xl bg-gradient-to-b from-white to-emerald-50/60 border border-emerald-200 text-xl font-digital font-bold text-emerald-950 hover:bg-emerald-100/70 active:scale-95 transition shadow-sm">7</button>
+                <button onclick="singleKeyPress('8')" class="h-12 rounded-2xl bg-gradient-to-b from-white to-emerald-50/60 border border-emerald-200 text-xl font-digital font-bold text-emerald-950 hover:bg-emerald-100/70 active:scale-95 transition shadow-sm">8</button>
+                <button onclick="singleKeyPress('9')" class="h-12 rounded-2xl bg-gradient-to-b from-white to-emerald-50/60 border border-emerald-200 text-xl font-digital font-bold text-emerald-950 hover:bg-emerald-100/70 active:scale-95 transition shadow-sm">9</button>
+                <button onclick="singleKeyBack()" class="h-12 rounded-2xl bg-emerald-50 border border-emerald-200 text-amber-600 text-lg hover:bg-emerald-100 active:scale-95 transition flex items-center justify-center shadow-sm">
                   <i class="fa-solid fa-delete-left"></i>
                 </button>
-                <button onclick="singleKeyPress('0')" class="h-12 rounded-2xl bg-slate-800 border border-slate-700 text-xl font-digital font-bold text-white hover:bg-slate-700 active:scale-95 transition">0</button>
-                <button onclick="submitSingleGuess()" class="h-12 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-base shadow active:scale-95 transition flex items-center justify-center gap-1.5">
+                <button onclick="singleKeyPress('0')" class="h-12 rounded-2xl bg-gradient-to-b from-white to-emerald-50/60 border border-emerald-200 text-xl font-digital font-bold text-emerald-950 hover:bg-emerald-100/70 active:scale-95 transition shadow-sm">0</button>
+                <button onclick="submitSingleGuess()" class="h-12 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-base shadow active:scale-95 transition flex items-center justify-center gap-1.5">
                   <span>猜！</span>
                   <i class="fa-solid fa-arrow-right"></i>
                 </button>
@@ -207,10 +225,10 @@
             </div>
           </div>
 
-          <div class="md:col-span-5 bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-lg flex flex-col h-[440px]">
-            <div class="flex items-center justify-between pb-2.5 border-b border-slate-800 text-xs">
-              <span class="font-bold text-slate-300"><i class="fa-solid fa-list-ol mr-1.5 text-indigo-400"></i>猜測歷程</span>
-              <span id="single-history-count" class="text-slate-400 font-digital">0 次記錄</span>
+          <div class="md:col-span-5 bg-white/95 border border-emerald-200 rounded-3xl p-4 shadow-sm flex flex-col h-[440px]">
+            <div class="flex items-center justify-between pb-2.5 border-b border-emerald-100 text-xs">
+              <span class="font-bold text-emerald-900"><i class="fa-solid fa-list-ol mr-1.5 text-emerald-600"></i>猜測歷程</span>
+              <span id="single-history-count" class="text-emerald-700 font-digital font-medium">0 次記錄</span>
             </div>
             <div id="single-history-list" class="flex-1 overflow-y-auto custom-scroll space-y-2 py-2 pr-1"></div>
           </div>
@@ -220,37 +238,37 @@
 
     <!-- ================= 2. 雙人對決模式 ================= -->
     <section id="mode-duel-section" class="hidden w-full space-y-4">
-      <div id="duel-lobby-card" class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl max-w-lg mx-auto">
+      <div id="duel-lobby-card" class="bg-white/95 border border-emerald-200 rounded-3xl p-6 shadow-lg shadow-emerald-900/5 max-w-lg mx-auto">
         <div class="text-center space-y-2 mb-6">
-          <div class="w-14 h-14 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto text-2xl border border-indigo-500/20">
+          <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-2xl border border-emerald-200">
             <i class="fa-solid fa-user-ninja"></i>
           </div>
-          <h2 class="text-xl font-bold text-white">雙平板 1v1 線上對決</h2>
-          <p class="text-xs text-slate-400">兩台平板互相秘密出題，支援掃碼秒速連線！</p>
+          <h2 class="text-xl font-bold text-emerald-950">雙平板 1v1 草原對決</h2>
+          <p class="text-xs text-emerald-700">兩台平板互相秘密出題，支援掃碼秒速連線！</p>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
           <!-- 開房區 (關主) -->
-          <div class="p-3 bg-slate-950/70 border border-slate-800 rounded-2xl space-y-2 flex flex-col justify-between">
+          <div class="p-3 bg-emerald-50/60 border border-emerald-200 rounded-2xl space-y-2 flex flex-col justify-between">
             <div class="space-y-1">
-              <span class="text-xs font-bold text-indigo-400 block"><i class="fa-solid fa-crown mr-1"></i>建立房間</span>
-              <input type="text" id="duel-host-name-input" placeholder="關主暱稱" value="關主" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+              <span class="text-xs font-bold text-emerald-800 block"><i class="fa-solid fa-crown mr-1 text-amber-500"></i>建立房間</span>
+              <input type="text" id="duel-host-name-input" placeholder="關主暱稱" value="關主" class="w-full bg-white border border-emerald-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-emerald-500">
             </div>
-            <button onclick="createDuelRoom()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition shadow active:scale-95 flex items-center justify-center gap-1.5">
+            <button onclick="createDuelRoom()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition shadow active:scale-95 flex items-center justify-center gap-1.5">
               <i class="fa-solid fa-plus-circle"></i>
               <span>建立對戰房間 (關主)</span>
             </button>
           </div>
 
           <!-- 加入區 (學生) -->
-          <div class="p-3 bg-slate-950/70 border border-slate-800 rounded-2xl space-y-2 flex flex-col justify-between">
+          <div class="p-3 bg-emerald-50/60 border border-emerald-200 rounded-2xl space-y-2 flex flex-col justify-between">
             <div class="space-y-1">
-              <span class="text-xs font-bold text-violet-400 block"><i class="fa-solid fa-user-graduate mr-1"></i>加入對戰</span>
-              <input type="text" id="duel-guest-name-input" placeholder="學生暱稱" value="學生" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+              <span class="text-xs font-bold text-teal-800 block"><i class="fa-solid fa-user-graduate mr-1 text-teal-600"></i>加入對戰</span>
+              <input type="text" id="duel-guest-name-input" placeholder="學生暱稱" value="學生" class="w-full bg-white border border-emerald-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-emerald-500">
             </div>
             <div class="flex gap-1.5">
-              <input type="text" id="duel-code-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="4位代碼" class="w-20 bg-slate-900 border border-slate-700 rounded-xl text-center font-digital text-sm text-white focus:outline-none focus:border-indigo-500">
-              <button onclick="joinDuelRoom()" class="flex-1 py-2.5 bg-violet-600 hover:bg-violet-500 text-white font-bold rounded-xl text-xs transition shadow active:scale-95 flex items-center justify-center gap-1">
+              <input type="text" id="duel-code-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="4位代碼" class="w-20 bg-white border border-emerald-200 rounded-xl text-center font-digital text-sm text-slate-800 font-bold focus:outline-none focus:border-emerald-500">
+              <button onclick="joinDuelRoom()" class="flex-1 py-2.5 bg-teal-600 hover:bg-teal-500 text-white font-bold rounded-xl text-xs transition shadow active:scale-95 flex items-center justify-center gap-1">
                 <i class="fa-solid fa-right-to-bracket"></i>
                 <span>加入 (學生)</span>
               </button>
@@ -260,130 +278,130 @@
       </div>
 
       <!-- 等待對手加入 (含 QR Code) -->
-      <div id="duel-waiting-card" class="hidden bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl max-w-md mx-auto text-center space-y-4">
-        <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto text-xl border border-indigo-500/20">
+      <div id="duel-waiting-card" class="hidden bg-white/95 border border-emerald-200 rounded-3xl p-6 shadow-xl max-w-md mx-auto text-center space-y-4">
+        <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-xl border border-emerald-200">
           <i class="fa-solid fa-qrcode"></i>
         </div>
         <div>
-          <h3 class="text-lg font-bold text-white">等待對手平板加入</h3>
-          <p class="text-xs text-slate-400 mt-1">開啟相機掃描下方 QR Code，或輸入邀請碼：</p>
+          <h3 class="text-lg font-bold text-emerald-950">等待對手平板加入</h3>
+          <p class="text-xs text-emerald-700 mt-1">開啟相機掃描下方 QR Code，或輸入邀請碼：</p>
         </div>
 
-        <div class="p-2.5 bg-slate-800 rounded-2xl border border-indigo-500/40 inline-block px-8">
-          <span id="duel-display-code" class="text-3xl font-digital font-bold text-amber-400 tracking-widest">----</span>
+        <div class="p-2.5 bg-emerald-50 rounded-2xl border border-emerald-300 inline-block px-8 shadow-sm">
+          <span id="duel-display-code" class="text-3xl font-digital font-bold text-emerald-800 tracking-widest">----</span>
         </div>
 
-        <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex flex-col items-center justify-center gap-2">
-          <div id="duel-qrcode-box" class="p-2 bg-white rounded-xl shadow-lg flex items-center justify-center min-w-[130px] min-h-[130px]"></div>
-          <span class="text-xs text-slate-400 flex items-center gap-1 mt-1">
-            <i class="fa-solid fa-camera text-indigo-400"></i> 對手平板開啟相機直接掃描
+        <div class="bg-emerald-50/70 p-4 rounded-2xl border border-emerald-200 flex flex-col items-center justify-center gap-2">
+          <div id="duel-qrcode-box" class="p-2.5 bg-white rounded-xl shadow-md border border-emerald-100 flex items-center justify-center min-w-[130px] min-h-[130px]"></div>
+          <span class="text-xs text-emerald-800 font-medium flex items-center gap-1 mt-1">
+            <i class="fa-solid fa-camera text-emerald-600"></i> 對手平板開啟相機直接掃描
           </span>
-          <button onclick="copyInviteLink('duel')" class="text-xs text-indigo-400 hover:underline">複製邀請網址</button>
+          <button onclick="copyInviteLink('duel')" class="text-xs text-emerald-700 font-bold hover:underline">複製邀請網址</button>
         </div>
 
-        <button onclick="leaveDuel()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded-xl transition">
+        <button onclick="leaveDuel()" class="px-4 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 font-bold text-xs rounded-xl transition">
           取消並返回
         </button>
       </div>
 
       <!-- 秘密出題階段 -->
-      <div id="duel-secret-card" class="hidden bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl max-w-md mx-auto space-y-4">
-        <div class="grid grid-cols-2 gap-2 p-2 bg-slate-950 rounded-2xl border border-slate-800 text-xs">
-          <div class="flex items-center gap-1.5 px-2 py-1 bg-slate-900 rounded-xl">
+      <div id="duel-secret-card" class="hidden bg-white/95 border border-emerald-200 rounded-3xl p-6 shadow-xl max-w-md mx-auto space-y-4">
+        <div class="grid grid-cols-2 gap-2 p-2 bg-emerald-50/80 rounded-2xl border border-emerald-200 text-xs">
+          <div class="flex items-center gap-1.5 px-2 py-1 bg-white rounded-xl border border-emerald-100">
             <span id="duel-my-ready-dot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
-            <span id="duel-my-ready-text" class="text-amber-400 truncate">我方：出題中...</span>
+            <span id="duel-my-ready-text" class="text-amber-700 font-bold truncate">我方：出題中...</span>
           </div>
-          <div class="flex items-center gap-1.5 px-2 py-1 bg-slate-900 rounded-xl">
+          <div class="flex items-center gap-1.5 px-2 py-1 bg-white rounded-xl border border-emerald-100">
             <span id="duel-opp-ready-dot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
-            <span id="duel-opp-ready-text" class="text-amber-400 truncate">對手：出題中...</span>
+            <span id="duel-opp-ready-text" class="text-amber-700 font-bold truncate">對手：出題中...</span>
           </div>
         </div>
 
         <div class="text-center space-y-1">
-          <h3 class="text-lg font-bold text-white">秘密出題階段</h3>
-          <p class="text-xs text-slate-400">為對手設定一組 <span class="digit-tag font-digital text-indigo-400">4</span> 位不重複數字！</p>
+          <h3 class="text-lg font-bold text-emerald-950">秘密出題階段</h3>
+          <p class="text-xs text-emerald-700">為對手設定一組 <span class="digit-tag font-digital text-emerald-800 font-bold">4</span> 位不重複數字！</p>
         </div>
 
-        <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex flex-col items-center space-y-3">
+        <div class="bg-emerald-50/70 p-4 rounded-2xl border border-emerald-200 flex flex-col items-center space-y-3">
           <div id="duel-secret-slots" class="flex gap-2 justify-center"></div>
           <div class="flex gap-2">
-            <button onclick="randomDuelSecret()" class="text-xs px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition">隨機產生</button>
-            <button onclick="clearDuelSecret()" class="text-xs px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition">清空</button>
+            <button onclick="randomDuelSecret()" class="text-xs px-3 py-1.5 bg-white border border-emerald-200 hover:bg-emerald-100 text-emerald-800 rounded-lg transition font-bold shadow-sm">隨機產生</button>
+            <button onclick="clearDuelSecret()" class="text-xs px-3 py-1.5 bg-white border border-emerald-200 hover:bg-emerald-100 text-emerald-800 rounded-lg transition font-bold shadow-sm">清空</button>
           </div>
         </div>
 
         <div class="grid grid-cols-5 gap-1.5 font-digital">
-          <button onclick="duelSecretPress('0')" class="h-10 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-700">0</button>
-          <button onclick="duelSecretPress('1')" class="h-10 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-700">1</button>
-          <button onclick="duelSecretPress('2')" class="h-10 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-700">2</button>
-          <button onclick="duelSecretPress('3')" class="h-10 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-700">3</button>
-          <button onclick="duelSecretPress('4')" class="h-10 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-700">4</button>
-          <button onclick="duelSecretPress('5')" class="h-10 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-700">5</button>
-          <button onclick="duelSecretPress('6')" class="h-10 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-700">6</button>
-          <button onclick="duelSecretPress('7')" class="h-10 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-700">7</button>
-          <button onclick="duelSecretPress('8')" class="h-10 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-700">8</button>
-          <button onclick="duelSecretPress('9')" class="h-10 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-700">9</button>
+          <button onclick="duelSecretPress('0')" class="h-10 rounded-xl bg-white border border-emerald-200 text-emerald-950 font-bold hover:bg-emerald-100 shadow-sm">0</button>
+          <button onclick="duelSecretPress('1')" class="h-10 rounded-xl bg-white border border-emerald-200 text-emerald-950 font-bold hover:bg-emerald-100 shadow-sm">1</button>
+          <button onclick="duelSecretPress('2')" class="h-10 rounded-xl bg-white border border-emerald-200 text-emerald-950 font-bold hover:bg-emerald-100 shadow-sm">2</button>
+          <button onclick="duelSecretPress('3')" class="h-10 rounded-xl bg-white border border-emerald-200 text-emerald-950 font-bold hover:bg-emerald-100 shadow-sm">3</button>
+          <button onclick="duelSecretPress('4')" class="h-10 rounded-xl bg-white border border-emerald-200 text-emerald-950 font-bold hover:bg-emerald-100 shadow-sm">4</button>
+          <button onclick="duelSecretPress('5')" class="h-10 rounded-xl bg-white border border-emerald-200 text-emerald-950 font-bold hover:bg-emerald-100 shadow-sm">5</button>
+          <button onclick="duelSecretPress('6')" class="h-10 rounded-xl bg-white border border-emerald-200 text-emerald-950 font-bold hover:bg-emerald-100 shadow-sm">6</button>
+          <button onclick="duelSecretPress('7')" class="h-10 rounded-xl bg-white border border-emerald-200 text-emerald-950 font-bold hover:bg-emerald-100 shadow-sm">7</button>
+          <button onclick="duelSecretPress('8')" class="h-10 rounded-xl bg-white border border-emerald-200 text-emerald-950 font-bold hover:bg-emerald-100 shadow-sm">8</button>
+          <button onclick="duelSecretPress('9')" class="h-10 rounded-xl bg-white border border-emerald-200 text-emerald-950 font-bold hover:bg-emerald-100 shadow-sm">9</button>
         </div>
 
-        <button id="btn-lock-duel-secret" onclick="lockDuelSecret()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-sm transition shadow">
+        <button id="btn-lock-duel-secret" onclick="lockDuelSecret()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-sm transition shadow">
           <i class="fa-solid fa-lock mr-1.5"></i>鎖定密碼並就緒
         </button>
 
-        <div id="duel-secret-notice" class="hidden text-center text-xs text-emerald-400 font-bold py-1">
-          <i class="fa-solid fa-circle-check mr-1"></i>你的密碼已鎖定！等待對手出題...
+        <div id="duel-secret-notice" class="hidden text-center text-xs text-emerald-700 font-bold py-1">
+          <i class="fa-solid fa-circle-check mr-1 text-emerald-600"></i>你的密碼已鎖定！等待對手出題...
         </div>
       </div>
 
       <!-- 正式對戰戰局 -->
       <div id="duel-arena-card" class="hidden space-y-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 sm:p-4 flex items-center justify-between flex-wrap gap-2">
+        <div class="bg-white/95 border border-emerald-200 rounded-2xl p-3 sm:p-4 flex items-center justify-between flex-wrap gap-2 shadow-sm">
           <div class="flex items-center gap-3">
-            <span class="text-xs font-digital text-slate-400">房間: <span id="duel-arena-room-tag" class="text-white font-bold">----</span></span>
-            <span id="duel-turn-badge" class="text-xs px-3 py-1 rounded-full font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+            <span class="text-xs font-digital text-emerald-700">房間: <span id="duel-arena-room-tag" class="text-emerald-950 font-bold">----</span></span>
+            <span id="duel-turn-badge" class="text-xs px-3 py-1 rounded-full font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
               輪到我方猜測
             </span>
           </div>
-          <button onclick="leaveDuel()" class="text-xs text-slate-400 hover:text-rose-400">
+          <button onclick="leaveDuel()" class="text-xs text-emerald-700 hover:text-rose-600 font-medium">
             <i class="fa-solid fa-flag mr-1"></i>投降 / 離開
           </button>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
           <div class="md:col-span-7 space-y-4">
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-lg flex flex-col items-center relative overflow-hidden min-h-[170px] justify-center">
-              <div id="duel-lock-overlay" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-md z-20 flex flex-col items-center justify-center p-3 text-center">
-                <i id="duel-lock-icon" class="fa-solid fa-trophy text-3xl text-amber-400 mb-1.5 drop-shadow"></i>
-                <p id="duel-lock-text" class="text-xs sm:text-sm font-bold text-white tracking-wide">戰局已結算完成！</p>
+            <div class="bg-white/95 border border-emerald-200 rounded-3xl p-5 shadow-sm flex flex-col items-center relative overflow-hidden min-h-[170px] justify-center">
+              <div id="duel-lock-overlay" class="hidden absolute inset-0 bg-white/95 backdrop-blur-md z-20 flex flex-col items-center justify-center p-3 text-center">
+                <i id="duel-lock-icon" class="fa-solid fa-trophy text-3xl text-amber-500 mb-1.5 drop-shadow"></i>
+                <p id="duel-lock-text" class="text-xs sm:text-sm font-bold text-emerald-950 tracking-wide">戰局已結算完成！</p>
                 <div id="duel-end-actions" class="hidden mt-2.5 flex items-center justify-center gap-2 w-full max-w-xs px-2">
-                  <button onclick="restartDuelMatch()" class="flex-1 py-2 px-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition shadow active:scale-95 flex items-center justify-center gap-1.5 whitespace-nowrap">
+                  <button onclick="restartDuelMatch()" class="flex-1 py-2 px-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition shadow active:scale-95 flex items-center justify-center gap-1.5 whitespace-nowrap">
                     <i class="fa-solid fa-rotate-right text-[11px]"></i> 再比一次
                   </button>
-                  <button onclick="leaveDuel()" class="flex-1 py-2 px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition border border-slate-700 active:scale-95 flex items-center justify-center gap-1.5 whitespace-nowrap">
+                  <button onclick="leaveDuel()" class="flex-1 py-2 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 rounded-xl text-xs font-bold transition border border-emerald-200 active:scale-95 flex items-center justify-center gap-1.5 whitespace-nowrap">
                     <i class="fa-solid fa-door-open text-[11px]"></i> 關閉房間
                   </button>
                 </div>
               </div>
 
               <div id="duel-guess-slots" class="flex gap-2.5 sm:gap-3 my-2 justify-center"></div>
-              <p class="text-xs text-slate-400 mt-2">破譯對方的神祕密碼！</p>
+              <p class="text-xs text-emerald-700 mt-2 font-medium">破譯對方的神祕密碼！</p>
             </div>
 
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-3 sm:p-4 shadow-lg">
+            <div class="bg-white/95 border border-emerald-200 rounded-3xl p-3 sm:p-4 shadow-sm">
               <div class="grid grid-cols-3 gap-2">
-                <button onclick="duelKeyPress('1')" class="h-12 rounded-2xl bg-slate-800 text-xl font-digital font-bold text-white hover:bg-slate-700">1</button>
-                <button onclick="duelKeyPress('2')" class="h-12 rounded-2xl bg-slate-800 text-xl font-digital font-bold text-white hover:bg-slate-700">2</button>
-                <button onclick="duelKeyPress('3')" class="h-12 rounded-2xl bg-slate-800 text-xl font-digital font-bold text-white hover:bg-slate-700">3</button>
-                <button onclick="duelKeyPress('4')" class="h-12 rounded-2xl bg-slate-800 text-xl font-digital font-bold text-white hover:bg-slate-700">4</button>
-                <button onclick="duelKeyPress('5')" class="h-12 rounded-2xl bg-slate-800 text-xl font-digital font-bold text-white hover:bg-slate-700">5</button>
-                <button onclick="duelKeyPress('6')" class="h-12 rounded-2xl bg-slate-800 text-xl font-digital font-bold text-white hover:bg-slate-700">6</button>
-                <button onclick="duelKeyPress('7')" class="h-12 rounded-2xl bg-slate-800 text-xl font-digital font-bold text-white hover:bg-slate-700">7</button>
-                <button onclick="duelKeyPress('8')" class="h-12 rounded-2xl bg-slate-800 text-xl font-digital font-bold text-white hover:bg-slate-700">8</button>
-                <button onclick="duelKeyPress('9')" class="h-12 rounded-2xl bg-slate-800 text-xl font-digital font-bold text-white hover:bg-slate-700">9</button>
-                <button onclick="duelKeyBack()" class="h-12 rounded-2xl bg-slate-800 text-amber-400 text-lg hover:bg-slate-700 flex items-center justify-center">
+                <button onclick="duelKeyPress('1')" class="h-12 rounded-2xl bg-gradient-to-b from-white to-emerald-50/60 border border-emerald-200 text-xl font-digital font-bold text-emerald-950 hover:bg-emerald-100 shadow-sm">1</button>
+                <button onclick="duelKeyPress('2')" class="h-12 rounded-2xl bg-gradient-to-b from-white to-emerald-50/60 border border-emerald-200 text-xl font-digital font-bold text-emerald-950 hover:bg-emerald-100 shadow-sm">2</button>
+                <button onclick="duelKeyPress('3')" class="h-12 rounded-2xl bg-gradient-to-b from-white to-emerald-50/60 border border-emerald-200 text-xl font-digital font-bold text-emerald-950 hover:bg-emerald-100 shadow-sm">3</button>
+                <button onclick="duelKeyPress('4')" class="h-12 rounded-2xl bg-gradient-to-b from-white to-emerald-50/60 border border-emerald-200 text-xl font-digital font-bold text-emerald-950 hover:bg-emerald-100 shadow-sm">4</button>
+                <button onclick="duelKeyPress('5')" class="h-12 rounded-2xl bg-gradient-to-b from-white to-emerald-50/60 border border-emerald-200 text-xl font-digital font-bold text-emerald-950 hover:bg-emerald-100 shadow-sm">5</button>
+                <button onclick="duelKeyPress('6')" class="h-12 rounded-2xl bg-gradient-to-b from-white to-emerald-50/60 border border-emerald-200 text-xl font-digital font-bold text-emerald-950 hover:bg-emerald-100 shadow-sm">6</button>
+                <button onclick="duelKeyPress('7')" class="h-12 rounded-2xl bg-gradient-to-b from-white to-emerald-50/60 border border-emerald-200 text-xl font-digital font-bold text-emerald-950 hover:bg-emerald-100 shadow-sm">7</button>
+                <button onclick="duelKeyPress('8')" class="h-12 rounded-2xl bg-gradient-to-b from-white to-emerald-50/60 border border-emerald-200 text-xl font-digital font-bold text-emerald-950 hover:bg-emerald-100 shadow-sm">8</button>
+                <button onclick="duelKeyPress('9')" class="h-12 rounded-2xl bg-gradient-to-b from-white to-emerald-50/60 border border-emerald-200 text-xl font-digital font-bold text-emerald-950 hover:bg-emerald-100 shadow-sm">9</button>
+                <button onclick="duelKeyBack()" class="h-12 rounded-2xl bg-emerald-50 border border-emerald-200 text-amber-600 text-lg hover:bg-emerald-100 flex items-center justify-center shadow-sm">
                   <i class="fa-solid fa-delete-left"></i>
                 </button>
-                <button onclick="duelKeyPress('0')" class="h-12 rounded-2xl bg-slate-800 text-xl font-digital font-bold text-white hover:bg-slate-700">0</button>
-                <button id="btn-duel-submit" onclick="submitDuelGuess()" class="h-12 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold text-base shadow flex items-center justify-center gap-1.5 active:scale-95 transition">
+                <button onclick="duelKeyPress('0')" class="h-12 rounded-2xl bg-gradient-to-b from-white to-emerald-50/60 border border-emerald-200 text-xl font-digital font-bold text-emerald-950 hover:bg-emerald-100 shadow-sm">0</button>
+                <button id="btn-duel-submit" onclick="submitDuelGuess()" class="h-12 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-base shadow flex items-center justify-center gap-1.5 active:scale-95 transition">
                   <span>猜！</span>
                   <i class="fa-solid fa-crosshairs"></i>
                 </button>
@@ -391,14 +409,14 @@
             </div>
           </div>
 
-          <div class="md:col-span-5 bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-lg flex flex-col h-[440px]">
-            <div class="grid grid-cols-2 gap-2 pb-2.5 border-b border-slate-800 text-center text-xs font-bold">
-              <span id="duel-title-p1" class="text-indigo-400">我方進度</span>
-              <span id="duel-title-p2" class="text-violet-400">對手進度</span>
+          <div class="md:col-span-5 bg-white/95 border border-emerald-200 rounded-3xl p-4 shadow-sm flex flex-col h-[440px]">
+            <div class="grid grid-cols-2 gap-2 pb-2.5 border-b border-emerald-100 text-center text-xs font-bold">
+              <span id="duel-title-p1" class="text-emerald-800">我方進度</span>
+              <span id="duel-title-p2" class="text-teal-800">對手進度</span>
             </div>
             <div class="grid grid-cols-2 gap-2 flex-1 overflow-hidden pt-2">
               <div id="duel-history-p1" class="overflow-y-auto custom-scroll space-y-1.5 pr-1"></div>
-              <div id="duel-history-p2" class="overflow-y-auto custom-scroll space-y-1.5 pl-1 border-l border-slate-800"></div>
+              <div id="duel-history-p2" class="overflow-y-auto custom-scroll space-y-1.5 pl-1 border-l border-emerald-100"></div>
             </div>
           </div>
         </div>
@@ -407,31 +425,31 @@
 
     <!-- ================= 3. 多人派對模式 ================= -->
     <section id="mode-multi-section" class="hidden w-full space-y-4">
-      <div id="multi-lobby-card" class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl max-w-lg mx-auto">
+      <div id="multi-lobby-card" class="bg-white/95 border border-emerald-200 rounded-3xl p-6 shadow-lg shadow-emerald-900/5 max-w-lg mx-auto">
         <div class="text-center space-y-2 mb-6">
-          <div class="w-14 h-14 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto text-2xl border border-indigo-500/20">
+          <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-2xl border border-emerald-200">
             <i class="fa-solid fa-users"></i>
           </div>
-          <h2 class="text-xl font-bold text-white">多人平板連線派對</h2>
-          <p class="text-xs text-slate-400">支援最多 20 位特工掃碼或輸碼同房競技！</p>
+          <h2 class="text-xl font-bold text-emerald-950">多人平板連線派對</h2>
+          <p class="text-xs text-emerald-700">支援最多 20 位特工掃碼或輸碼同房競技！</p>
         </div>
 
         <!-- 玩法選擇 -->
-        <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 mb-4 space-y-2">
-          <span class="text-xs text-slate-400 font-bold block">選擇派對玩法：</span>
+        <div class="bg-emerald-50/70 p-3 rounded-2xl border border-emerald-200 mb-4 space-y-2">
+          <span class="text-xs text-emerald-900 font-bold block">選擇派對玩法：</span>
           <div class="grid grid-cols-2 gap-2">
-            <label class="flex items-center gap-2 p-2 rounded-xl bg-slate-900 border border-slate-800 cursor-pointer hover:border-amber-500">
-              <input type="radio" name="multi-rule-type" value="race" checked class="text-indigo-600 focus:ring-0">
+            <label class="flex items-center gap-2 p-2 rounded-xl bg-white border border-emerald-200 cursor-pointer hover:border-emerald-500 shadow-sm">
+              <input type="radio" name="multi-rule-type" value="race" checked class="text-emerald-600 focus:ring-0">
               <div>
-                <span class="text-xs font-bold text-amber-400 block">⚡ 全員競速搶猜 (推薦)</span>
-                <span class="text-[10px] text-slate-400">所有人同步搶答衝刺</span>
+                <span class="text-xs font-bold text-emerald-800 block">⚡ 全員競速搶猜 (推薦)</span>
+                <span class="text-[10px] text-emerald-600">所有人同步搶答衝刺</span>
               </div>
             </label>
-            <label class="flex items-center gap-2 p-2 rounded-xl bg-slate-900 border border-slate-800 cursor-pointer hover:border-indigo-500">
-              <input type="radio" name="multi-rule-type" value="turn" class="text-indigo-600 focus:ring-0">
+            <label class="flex items-center gap-2 p-2 rounded-xl bg-white border border-emerald-200 cursor-pointer hover:border-emerald-500 shadow-sm">
+              <input type="radio" name="multi-rule-type" value="turn" class="text-emerald-600 focus:ring-0">
               <div>
-                <span class="text-xs font-bold text-white block">🔄 輪流接力猜</span>
-                <span class="text-[10px] text-slate-400">共用線索池依序出招</span>
+                <span class="text-xs font-bold text-emerald-950 block">🔄 輪流接力猜</span>
+                <span class="text-[10px] text-emerald-600">共用線索池依序出招</span>
               </div>
             </label>
           </div>
@@ -439,26 +457,26 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
           <!-- 開立派對 (關主) -->
-          <div class="p-3 bg-slate-950/70 border border-slate-800 rounded-2xl space-y-2 flex flex-col justify-between">
+          <div class="p-3 bg-emerald-50/60 border border-emerald-200 rounded-2xl space-y-2 flex flex-col justify-between">
             <div class="space-y-1">
-              <span class="text-xs font-bold text-indigo-400 block"><i class="fa-solid fa-crown mr-1"></i>建立派對房間</span>
-              <input type="text" id="multi-host-name-input" placeholder="關主暱稱" value="關主" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+              <span class="text-xs font-bold text-emerald-800 block"><i class="fa-solid fa-crown mr-1 text-amber-500"></i>建立派對房間</span>
+              <input type="text" id="multi-host-name-input" placeholder="關主暱稱" value="關主" class="w-full bg-white border border-emerald-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-emerald-500">
             </div>
-            <button onclick="createMultiRoom()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition shadow active:scale-95 flex items-center justify-center gap-1.5">
+            <button onclick="createMultiRoom()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition shadow active:scale-95 flex items-center justify-center gap-1.5">
               <i class="fa-solid fa-plus-circle"></i>
               <span>建立派對 (關主)</span>
             </button>
           </div>
 
           <!-- 加入派對 (學生) -->
-          <div class="p-3 bg-slate-950/70 border border-slate-800 rounded-2xl space-y-2 flex flex-col justify-between">
+          <div class="p-3 bg-emerald-50/60 border border-emerald-200 rounded-2xl space-y-2 flex flex-col justify-between">
             <div class="space-y-1">
-              <span class="text-xs font-bold text-violet-400 block"><i class="fa-solid fa-user-graduate mr-1"></i>加入派對</span>
-              <input type="text" id="multi-guest-name-input" placeholder="學生暱稱" value="學生" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+              <span class="text-xs font-bold text-teal-800 block"><i class="fa-solid fa-user-graduate mr-1 text-teal-600"></i>加入派對</span>
+              <input type="text" id="multi-guest-name-input" placeholder="學生暱稱" value="學生" class="w-full bg-white border border-emerald-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-emerald-500">
             </div>
             <div class="flex gap-1.5">
-              <input type="text" id="multi-code-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="4位代碼" class="w-20 bg-slate-900 border border-slate-700 rounded-xl text-center font-digital text-sm text-white focus:outline-none focus:border-indigo-500">
-              <button onclick="joinMultiRoom()" class="flex-1 py-2.5 bg-violet-600 hover:bg-violet-500 text-white font-bold rounded-xl text-xs transition shadow active:scale-95 flex items-center justify-center gap-1">
+              <input type="text" id="multi-code-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="4位代碼" class="w-20 bg-white border border-emerald-200 rounded-xl text-center font-digital text-sm text-slate-800 font-bold focus:outline-none focus:border-emerald-500">
+              <button onclick="joinMultiRoom()" class="flex-1 py-2.5 bg-teal-600 hover:bg-teal-500 text-white font-bold rounded-xl text-xs transition shadow active:scale-95 flex items-center justify-center gap-1">
                 <i class="fa-solid fa-right-to-bracket"></i>
                 <span>加入 (學生)</span>
               </button>
@@ -468,49 +486,49 @@
       </div>
 
       <!-- 多人等待室 (含 QR Code) -->
-      <div id="multi-waiting-card" class="hidden bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl max-w-lg mx-auto space-y-4">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-          <span class="text-xs text-slate-400 font-digital">派對代碼: <span id="multi-display-code" class="text-indigo-400 font-bold text-xl px-2 py-0.5 rounded bg-indigo-500/10">----</span></span>
-          <button onclick="leaveMulti()" class="text-xs text-slate-400 hover:text-rose-400">退出房間</button>
+      <div id="multi-waiting-card" class="hidden bg-white/95 border border-emerald-200 rounded-3xl p-6 shadow-xl max-w-lg mx-auto space-y-4">
+        <div class="flex items-center justify-between border-b border-emerald-100 pb-3">
+          <span class="text-xs text-emerald-800 font-digital font-bold">派對代碼: <span id="multi-display-code" class="text-emerald-700 font-bold text-xl px-2 py-0.5 rounded bg-emerald-100">----</span></span>
+          <button onclick="leaveMulti()" class="text-xs text-emerald-700 hover:text-rose-600 font-medium">退出房間</button>
         </div>
 
-        <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex flex-col sm:flex-row items-center justify-center gap-4 text-center sm:text-left">
-          <div id="multi-qrcode-box" class="p-2 bg-white rounded-xl shadow-lg flex items-center justify-center min-w-[120px] min-h-[120px]"></div>
+        <div class="bg-emerald-50/70 p-4 rounded-2xl border border-emerald-200 flex flex-col sm:flex-row items-center justify-center gap-4 text-center sm:text-left">
+          <div id="multi-qrcode-box" class="p-2.5 bg-white rounded-xl shadow-md border border-emerald-100 flex items-center justify-center min-w-[120px] min-h-[120px]"></div>
           <div class="space-y-1">
-            <span class="text-xs font-bold text-indigo-400 block"><i class="fa-solid fa-qrcode mr-1"></i> 全員掃碼快速進房</span>
-            <p class="text-xs text-slate-300">拿平板相機掃描 QR Code 即可秒速加入戰局！</p>
-            <button onclick="copyInviteLink('multi')" class="text-xs text-indigo-400 hover:underline">複製邀請網址</button>
+            <span class="text-xs font-bold text-emerald-800 block"><i class="fa-solid fa-qrcode mr-1 text-emerald-600"></i> 全員掃碼快速進房</span>
+            <p class="text-xs text-emerald-700">拿平板相機掃描 QR Code 即可秒速加入戰局！</p>
+            <button onclick="copyInviteLink('multi')" class="text-xs text-emerald-700 font-bold hover:underline">複製邀請網址</button>
           </div>
         </div>
 
         <div class="text-center space-y-1">
-          <h3 class="text-base font-bold text-white">等待同學集結 (<span id="multi-player-count">1</span>/20)</h3>
+          <h3 class="text-base font-bold text-emerald-950">等待同學集結 (<span id="multi-player-count">1</span>/20)</h3>
         </div>
 
-        <div id="multi-players-list" class="max-h-40 overflow-y-auto custom-scroll grid grid-cols-2 sm:grid-cols-3 gap-2 p-2 bg-slate-950 rounded-2xl border border-slate-800"></div>
+        <div id="multi-players-list" class="max-h-40 overflow-y-auto custom-scroll grid grid-cols-2 sm:grid-cols-3 gap-2 p-2 bg-emerald-50/60 rounded-2xl border border-emerald-200"></div>
 
         <div id="multi-host-controls" class="pt-2">
-          <button id="btn-start-multi" onclick="startMultiGame()" class="w-full py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold rounded-2xl text-base shadow active:scale-95 transition">
+          <button id="btn-start-multi" onclick="startMultiGame()" class="w-full py-3 bg-gradient-to-r from-emerald-600 via-teal-600 to-green-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-2xl text-base shadow active:scale-95 transition">
             <i class="fa-solid fa-play mr-2"></i>全員到齊，立即開戰！
           </button>
         </div>
 
-        <div id="multi-guest-notice" class="hidden text-center text-xs text-slate-400 py-2">
-          <i class="fa-solid fa-satellite-dish text-indigo-400 mr-1 animate-pulse"></i> 已就緒，等待關主啟動戰局...
+        <div id="multi-guest-notice" class="hidden text-center text-xs text-emerald-700 font-bold py-2">
+          <i class="fa-solid fa-satellite-dish text-emerald-600 mr-1 animate-pulse"></i> 已就緒，等待關主啟動戰局...
         </div>
       </div>
 
       <!-- 正式多人戰局 -->
       <div id="multi-arena-card" class="hidden space-y-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 sm:p-4 flex items-center justify-between flex-wrap gap-2">
+        <div class="bg-white/95 border border-emerald-200 rounded-2xl p-3 sm:p-4 flex items-center justify-between flex-wrap gap-2 shadow-sm">
           <div class="flex items-center gap-3">
-            <span class="text-xs font-digital text-slate-400">房號: <span id="multi-arena-room-tag" class="text-white font-bold">----</span></span>
-            <span id="multi-rule-tag" class="text-xs px-2.5 py-0.5 rounded bg-slate-800 text-slate-300 font-digital">⚡ 競速搶猜</span>
-            <span id="multi-turn-badge" class="text-xs px-3 py-1 rounded-full font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+            <span class="text-xs font-digital text-emerald-700">房號: <span id="multi-arena-room-tag" class="text-emerald-950 font-bold">----</span></span>
+            <span id="multi-rule-tag" class="text-xs px-2.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-digital font-bold">⚡ 競速搶猜</span>
+            <span id="multi-turn-badge" class="text-xs px-3 py-1 rounded-full font-bold bg-amber-100 text-amber-800 border border-amber-200">
               全員同步破譯中
             </span>
           </div>
-          <button onclick="leaveMulti()" class="text-xs text-slate-400 hover:text-rose-400">
+          <button onclick="leaveMulti()" class="text-xs text-emerald-700 hover:text-rose-600 font-medium">
             <i class="fa-solid fa-flag mr-1"></i>退出
           </button>
         </div>
@@ -519,42 +537,42 @@
 
         <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
           <div class="md:col-span-7 space-y-4">
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-lg flex flex-col items-center relative overflow-hidden min-h-[170px] justify-center">
+            <div class="bg-white/95 border border-emerald-200 rounded-3xl p-5 shadow-sm flex flex-col items-center relative overflow-hidden min-h-[170px] justify-center">
               <!-- 結束時結算覆蓋層 -->
-              <div id="multi-lock-overlay" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-md z-20 flex flex-col items-center justify-center p-3 text-center">
-                <i id="multi-lock-icon" class="fa-solid fa-trophy text-3xl text-amber-400 mb-1.5 drop-shadow"></i>
-                <p id="multi-lock-text" class="text-xs sm:text-sm font-bold text-white tracking-wide">戰局已結算完成！</p>
+              <div id="multi-lock-overlay" class="hidden absolute inset-0 bg-white/95 backdrop-blur-md z-20 flex flex-col items-center justify-center p-3 text-center">
+                <i id="multi-lock-icon" class="fa-solid fa-trophy text-3xl text-amber-500 mb-1.5 drop-shadow"></i>
+                <p id="multi-lock-text" class="text-xs sm:text-sm font-bold text-emerald-950 tracking-wide">戰局已結算完成！</p>
                 <div id="multi-end-actions" class="mt-2.5 flex items-center justify-center gap-2 w-full max-w-xs px-2">
-                  <button onclick="rematchMultiGame()" class="flex-1 py-2 px-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition shadow active:scale-95 flex items-center justify-center gap-1.5 whitespace-nowrap">
+                  <button onclick="rematchMultiGame()" class="flex-1 py-2 px-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition shadow active:scale-95 flex items-center justify-center gap-1.5 whitespace-nowrap">
                     <i class="fa-solid fa-rotate-right text-[11px]"></i> 再比一次
                   </button>
-                  <button onclick="leaveMulti()" class="flex-1 py-2 px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition border border-slate-700 active:scale-95 flex items-center justify-center gap-1.5 whitespace-nowrap">
+                  <button onclick="leaveMulti()" class="flex-1 py-2 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 rounded-xl text-xs font-bold transition border border-emerald-200 active:scale-95 flex items-center justify-center gap-1.5 whitespace-nowrap">
                     <i class="fa-solid fa-door-open text-[11px]"></i> 離開房間
                   </button>
                 </div>
               </div>
 
               <div id="multi-guess-slots" class="flex gap-2.5 sm:gap-3 my-2 justify-center"></div>
-              <p id="multi-guess-tip" class="text-xs text-slate-400 mt-2">破譯全場神祕密碼！</p>
+              <p id="multi-guess-tip" class="text-xs text-emerald-700 mt-2 font-medium">破譯全場神祕密碼！</p>
             </div>
 
             <!-- 九宮格 -->
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-3 sm:p-4 shadow-lg">
+            <div class="bg-white/95 border border-emerald-200 rounded-3xl p-3 sm:p-4 shadow-sm">
               <div class="grid grid-cols-3 gap-2">
-                <button onclick="multiKeyPress('1')" class="h-12 rounded-2xl bg-slate-800 text-xl font-digital font-bold text-white hover:bg-slate-700">1</button>
-                <button onclick="multiKeyPress('2')" class="h-12 rounded-2xl bg-slate-800 text-xl font-digital font-bold text-white hover:bg-slate-700">2</button>
-                <button onclick="multiKeyPress('3')" class="h-12 rounded-2xl bg-slate-800 text-xl font-digital font-bold text-white hover:bg-slate-700">3</button>
-                <button onclick="multiKeyPress('4')" class="h-12 rounded-2xl bg-slate-800 text-xl font-digital font-bold text-white hover:bg-slate-700">4</button>
-                <button onclick="multiKeyPress('5')" class="h-12 rounded-2xl bg-slate-800 text-xl font-digital font-bold text-white hover:bg-slate-700">5</button>
-                <button onclick="multiKeyPress('6')" class="h-12 rounded-2xl bg-slate-800 text-xl font-digital font-bold text-white hover:bg-slate-700">6</button>
-                <button onclick="multiKeyPress('7')" class="h-12 rounded-2xl bg-slate-800 text-xl font-digital font-bold text-white hover:bg-slate-700">7</button>
-                <button onclick="multiKeyPress('8')" class="h-12 rounded-2xl bg-slate-800 text-xl font-digital font-bold text-white hover:bg-slate-700">8</button>
-                <button onclick="multiKeyPress('9')" class="h-12 rounded-2xl bg-slate-800 text-xl font-digital font-bold text-white hover:bg-slate-700">9</button>
-                <button onclick="multiKeyBack()" class="h-12 rounded-2xl bg-slate-800 text-amber-400 text-lg hover:bg-slate-700 flex items-center justify-center">
+                <button onclick="multiKeyPress('1')" class="h-12 rounded-2xl bg-gradient-to-b from-white to-emerald-50/60 border border-emerald-200 text-xl font-digital font-bold text-emerald-950 hover:bg-emerald-100 shadow-sm">1</button>
+                <button onclick="multiKeyPress('2')" class="h-12 rounded-2xl bg-gradient-to-b from-white to-emerald-50/60 border border-emerald-200 text-xl font-digital font-bold text-emerald-950 hover:bg-emerald-100 shadow-sm">2</button>
+                <button onclick="multiKeyPress('3')" class="h-12 rounded-2xl bg-gradient-to-b from-white to-emerald-50/60 border border-emerald-200 text-xl font-digital font-bold text-emerald-950 hover:bg-emerald-100 shadow-sm">3</button>
+                <button onclick="multiKeyPress('4')" class="h-12 rounded-2xl bg-gradient-to-b from-white to-emerald-50/60 border border-emerald-200 text-xl font-digital font-bold text-emerald-950 hover:bg-emerald-100 shadow-sm">4</button>
+                <button onclick="multiKeyPress('5')" class="h-12 rounded-2xl bg-gradient-to-b from-white to-emerald-50/60 border border-emerald-200 text-xl font-digital font-bold text-emerald-950 hover:bg-emerald-100 shadow-sm">5</button>
+                <button onclick="multiKeyPress('6')" class="h-12 rounded-2xl bg-gradient-to-b from-white to-emerald-50/60 border border-emerald-200 text-xl font-digital font-bold text-emerald-950 hover:bg-emerald-100 shadow-sm">6</button>
+                <button onclick="multiKeyPress('7')" class="h-12 rounded-2xl bg-gradient-to-b from-white to-emerald-50/60 border border-emerald-200 text-xl font-digital font-bold text-emerald-950 hover:bg-emerald-100 shadow-sm">7</button>
+                <button onclick="multiKeyPress('8')" class="h-12 rounded-2xl bg-gradient-to-b from-white to-emerald-50/60 border border-emerald-200 text-xl font-digital font-bold text-emerald-950 hover:bg-emerald-100 shadow-sm">8</button>
+                <button onclick="multiKeyPress('9')" class="h-12 rounded-2xl bg-gradient-to-b from-white to-emerald-50/60 border border-emerald-200 text-xl font-digital font-bold text-emerald-950 hover:bg-emerald-100 shadow-sm">9</button>
+                <button onclick="multiKeyBack()" class="h-12 rounded-2xl bg-emerald-50 border border-emerald-200 text-amber-600 text-lg hover:bg-emerald-100 flex items-center justify-center shadow-sm">
                   <i class="fa-solid fa-delete-left"></i>
                 </button>
-                <button onclick="multiKeyPress('0')" class="h-12 rounded-2xl bg-slate-800 text-xl font-digital font-bold text-white hover:bg-slate-700">0</button>
-                <button id="btn-multi-submit" onclick="submitMultiGuess()" class="h-12 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold text-base shadow flex items-center justify-center gap-1.5 active:scale-95 transition">
+                <button onclick="multiKeyPress('0')" class="h-12 rounded-2xl bg-gradient-to-b from-white to-emerald-50/60 border border-emerald-200 text-xl font-digital font-bold text-emerald-950 hover:bg-emerald-100 shadow-sm">0</button>
+                <button id="btn-multi-submit" onclick="submitMultiGuess()" class="h-12 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-base shadow flex items-center justify-center gap-1.5 active:scale-95 transition">
                   <span id="btn-multi-submit-text">猜！</span>
                   <i class="fa-solid fa-bolt"></i>
                 </button>
@@ -563,10 +581,10 @@
           </div>
 
           <!-- 右側：共享情報池 -->
-          <div class="md:col-span-5 bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-lg flex flex-col h-[440px]">
-            <div class="flex items-center justify-between pb-2.5 border-b border-slate-800 text-xs">
-              <span class="font-bold text-slate-300"><i class="fa-solid fa-tower-broadcast mr-1.5 text-indigo-400"></i>破譯線索池</span>
-              <span id="multi-history-count" class="text-slate-400 font-digital">0 條情報</span>
+          <div class="md:col-span-5 bg-white/95 border border-emerald-200 rounded-3xl p-4 shadow-sm flex flex-col h-[440px]">
+            <div class="flex items-center justify-between pb-2.5 border-b border-emerald-100 text-xs">
+              <span class="font-bold text-emerald-900"><i class="fa-solid fa-tower-broadcast mr-1.5 text-emerald-600"></i>破譯線索池</span>
+              <span id="multi-history-count" class="text-emerald-700 font-digital font-medium">0 條情報</span>
             </div>
             <div id="multi-history-list" class="flex-1 overflow-y-auto custom-scroll space-y-2 py-2 pr-1"></div>
           </div>
@@ -576,47 +594,47 @@
 
   </main>
 
-  <!-- 勝利結算彈窗 -->
-  <div id="win-modal" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-indigo-500/40 rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl space-y-5">
-      <div class="w-16 h-16 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center mx-auto text-3xl shadow-xl shadow-amber-400/20">
+  <!-- 勝利結算彈窗 (草原花草系) -->
+  <div id="win-modal" class="hidden fixed inset-0 bg-emerald-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white border-2 border-emerald-300 rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl space-y-5">
+      <div class="w-16 h-16 rounded-full bg-amber-400 text-emerald-950 flex items-center justify-center mx-auto text-3xl shadow-lg shadow-amber-400/30">
         <i class="fa-solid fa-trophy"></i>
       </div>
       <div>
-        <h3 id="win-title" class="text-xl font-bold text-white tracking-wide">恭喜破譯完成！</h3>
-        <p id="win-subtitle" class="text-xs text-slate-400 mt-1">智慧非凡！成功解開密碼</p>
+        <h3 id="win-title" class="text-xl font-black text-emerald-950 tracking-wide">恭喜破譯完成！</h3>
+        <p id="win-subtitle" class="text-xs text-emerald-700 mt-1">智慧非凡！成功解開密碼</p>
       </div>
-      <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl space-y-1.5">
-        <span class="text-xs text-slate-400 block">終極正確密碼</span>
-        <div id="win-secret-code" class="text-3xl font-digital font-bold text-amber-400 tracking-widest">????</div>
+      <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl space-y-1.5">
+        <span class="text-xs text-emerald-800 font-bold block">終極正確密碼</span>
+        <div id="win-secret-code" class="text-3xl font-digital font-black text-amber-600 tracking-widest">????</div>
       </div>
-      <button onclick="closeWinModal()" class="w-full py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold rounded-xl text-sm transition shadow">
+      <button onclick="closeWinModal()" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-sm transition shadow">
         確認關閉
       </button>
     </div>
   </div>
 
   <!-- 連線診斷彈窗 -->
-  <div id="diagnostic-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-700 rounded-3xl p-5 sm:p-6 max-w-md w-full shadow-2xl space-y-4">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+  <div id="diagnostic-modal" class="hidden fixed inset-0 bg-emerald-950/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white border border-emerald-200 rounded-3xl p-5 sm:p-6 max-w-md w-full shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-emerald-100 pb-3">
         <div class="flex items-center gap-2">
-          <i class="fa-solid fa-plug text-indigo-400"></i>
-          <h3 class="text-sm font-bold text-white">Firebase 連線診斷</h3>
+          <i class="fa-solid fa-plug text-emerald-600"></i>
+          <h3 class="text-sm font-bold text-emerald-950">Firebase 連線診斷</h3>
         </div>
-        <button onclick="closeDiagnosticModal()" class="text-slate-400 hover:text-white text-xs">關閉</button>
+        <button onclick="closeDiagnosticModal()" class="text-emerald-700 hover:text-emerald-950 text-xs font-bold">關閉</button>
       </div>
       <div class="space-y-2 text-xs">
-        <div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-          <span class="text-slate-400">連線狀態:</span>
-          <span id="diag-status" class="font-bold text-amber-400">連線中...</span>
+        <div class="flex justify-between items-center bg-emerald-50/70 p-2.5 rounded-xl border border-emerald-200">
+          <span class="text-emerald-800 font-medium">連線狀態:</span>
+          <span id="diag-status" class="font-bold text-amber-600">連線中...</span>
         </div>
-        <div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-          <span class="text-slate-400">用戶識別碼 (UID):</span>
-          <span id="diag-uid" class="font-digital text-slate-300">未連線</span>
+        <div class="flex justify-between items-center bg-emerald-50/70 p-2.5 rounded-xl border border-emerald-200">
+          <span class="text-emerald-800 font-medium">用戶識別碼 (UID):</span>
+          <span id="diag-uid" class="font-digital text-emerald-900 font-semibold">未連線</span>
         </div>
       </div>
-      <p class="text-[11px] text-slate-400 leading-relaxed">
+      <p class="text-[11px] text-emerald-700 leading-relaxed">
         已啟用長輪詢優化 (Long-Polling)，可自動克服各品牌平板在學校 Wi-Fi 下的串流連線延遲問題。
       </p>
     </div>
@@ -624,8 +642,8 @@
 
   <!-- Toast 訊息元件 -->
   <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 pointer-events-none opacity-0 translate-y-4">
-    <div class="bg-slate-800/95 border border-slate-700 text-white text-xs sm:text-sm px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2">
-      <i id="toast-icon" class="fa-solid fa-circle-info text-indigo-400"></i>
+    <div class="bg-emerald-900/95 border border-emerald-700 text-white text-xs sm:text-sm px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2">
+      <i id="toast-icon" class="fa-solid fa-circle-info text-emerald-300"></i>
       <span id="toast-msg">提示訊息</span>
     </div>
   </div>
@@ -821,8 +839,8 @@
       [2, 3, 4].forEach(d => {
         const btn = document.getElementById(`btn-digit-${d}`);
         btn.className = d === n
-          ? "px-2 py-0.5 text-xs font-digital font-bold rounded-lg transition bg-indigo-600 text-white shadow"
-          : "px-2 py-0.5 text-xs font-digital font-bold rounded-lg transition text-slate-400";
+          ? "px-2 py-0.5 text-xs font-digital font-bold rounded-lg transition bg-emerald-600 text-white shadow-sm"
+          : "px-2 py-0.5 text-xs font-digital font-bold rounded-lg transition text-emerald-700 hover:text-emerald-900";
       });
       document.querySelectorAll('.digit-tag').forEach(el => el.innerText = n);
       updateSlotDisplay('single-slots-box', singleState.currentInput);
@@ -835,10 +853,10 @@
         const tab = document.getElementById(`tab-${m}`);
         const sec = document.getElementById(`mode-${m}-section`);
         if (m === mode) {
-          tab.className = "flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs sm:text-sm font-bold transition bg-indigo-600 text-white shadow";
+          tab.className = "flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs sm:text-sm font-bold transition bg-emerald-600 text-white shadow-sm";
           sec.classList.remove('hidden');
         } else {
-          tab.className = "flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs sm:text-sm font-bold transition text-slate-400 hover:text-slate-200";
+          tab.className = "flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs sm:text-sm font-bold transition text-emerald-800 hover:text-emerald-950 hover:bg-emerald-50";
           sec.classList.add('hidden');
         }
       });
@@ -877,8 +895,8 @@
         const slot = document.createElement('div');
         slot.className = `w-11 h-13 sm:w-13 sm:h-15 rounded-2xl border-2 flex items-center justify-center text-xl sm:text-2xl font-digital font-bold transition-all ${
           char 
-            ? 'border-indigo-500 bg-indigo-500/10 text-white shadow-md shadow-indigo-500/10 scale-105' 
-            : 'border-slate-700 bg-slate-800 text-slate-500'
+            ? 'border-emerald-500 bg-emerald-100/70 text-emerald-950 shadow-md shadow-emerald-500/10 scale-105' 
+            : 'border-emerald-200 bg-emerald-50/40 text-emerald-400'
         }`;
         slot.innerText = char;
         box.appendChild(slot);
@@ -894,7 +912,7 @@
           text: urlText,
           width: 120,
           height: 120,
-          colorDark: "#020617",
+          colorDark: "#1b4732",
           colorLight: "#ffffff",
           correctLevel: QRCode.CorrectLevel.M
         });
@@ -983,13 +1001,13 @@
       const btn = document.getElementById(`snote-${num}`);
       const state = singleState.notes[num];
       if (state === 'correct') {
-        btn.className = "h-9 rounded-xl bg-emerald-500/20 border-2 border-emerald-500 text-emerald-400 font-bold text-sm flex items-center justify-center";
+        btn.className = "h-9 rounded-xl bg-emerald-100 border-2 border-emerald-600 text-emerald-800 font-bold text-sm flex items-center justify-center shadow-sm";
         btn.innerHTML = `${num}<i class="fa-solid fa-check text-[8px] ml-0.5"></i>`;
       } else if (state === 'wrong') {
-        btn.className = "h-9 rounded-xl bg-slate-900 border border-slate-800 text-slate-600 line-through font-bold text-sm flex items-center justify-center opacity-40";
+        btn.className = "h-9 rounded-xl bg-slate-100 border border-slate-200 text-slate-400 line-through font-bold text-sm flex items-center justify-center opacity-50";
         btn.innerHTML = `${num}`;
       } else {
-        btn.className = "h-9 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-bold text-sm flex items-center justify-center";
+        btn.className = "h-9 rounded-xl bg-white border border-emerald-200 text-emerald-900 font-bold text-sm flex items-center justify-center shadow-sm";
         btn.innerHTML = `${num}`;
       }
     }
@@ -1045,19 +1063,19 @@
       count.innerText = `${singleState.history.length} 次記錄`;
 
       if (singleState.history.length === 0) {
-        list.innerHTML = `<div class="h-full flex items-center justify-center text-slate-500 text-xs">尚未有猜測紀錄</div>`;
+        list.innerHTML = `<div class="h-full flex items-center justify-center text-emerald-700/60 text-xs">尚未有猜測紀錄</div>`;
         return;
       }
 
       list.innerHTML = singleState.history.map(item => `
-        <div class="p-2.5 rounded-2xl bg-slate-800/80 border border-slate-700/80 flex items-center justify-between text-xs">
+        <div class="p-2.5 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 flex items-center justify-between text-xs shadow-sm">
           <div class="flex items-center gap-2.5">
-            <span class="w-6 h-6 rounded-lg bg-slate-900 text-slate-400 font-digital flex items-center justify-center font-bold">#${item.step}</span>
-            <span class="font-digital text-base font-bold text-white tracking-widest">${item.guess}</span>
+            <span class="w-6 h-6 rounded-lg bg-white border border-emerald-200 text-emerald-800 font-digital flex items-center justify-center font-bold">#${item.step}</span>
+            <span class="font-digital text-base font-bold text-emerald-950 tracking-widest">${item.guess}</span>
           </div>
           <div class="flex gap-1.5 font-digital font-bold">
-            <span class="px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">${item.a}A</span>
-            <span class="px-2 py-0.5 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30">${item.b}B</span>
+            <span class="px-2 py-0.5 rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-300">${item.a}A</span>
+            <span class="px-2 py-0.5 rounded-lg bg-amber-100 text-amber-800 border border-amber-300">${item.b}B</span>
           </div>
         </div>
       `).join('');
@@ -1386,11 +1404,11 @@
       const p2Box = document.getElementById('duel-history-p2');
 
       const render = (arr) => arr.map(item => `
-        <div class="p-2 rounded-xl bg-slate-800 border border-slate-700/80 flex items-center justify-between text-xs">
-          <span class="font-digital font-bold text-white">${item.guess}</span>
+        <div class="p-2 rounded-xl bg-emerald-50/70 border border-emerald-200 flex items-center justify-between text-xs shadow-sm">
+          <span class="font-digital font-bold text-emerald-950">${item.guess}</span>
           <div class="flex gap-1 font-digital font-bold">
-            <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">${item.a}A</span>
-            <span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400">${item.b}B</span>
+            <span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">${item.a}A</span>
+            <span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">${item.b}B</span>
           </div>
         </div>
       `).join('');
@@ -1734,12 +1752,12 @@
 
       const pList = document.getElementById('multi-players-list');
       pList.innerHTML = (data.players || []).map(p => `
-        <div class="flex items-center gap-1.5 p-2 rounded-xl bg-slate-900 border border-slate-800 text-xs">
-          <div class="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-[10px]">
+        <div class="flex items-center gap-1.5 p-2 rounded-xl bg-white border border-emerald-200 text-xs shadow-sm">
+          <div class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-[10px]">
             ${p.name.slice(0, 1)}
           </div>
-          <span class="truncate font-medium text-slate-200">${p.name}</span>
-          ${p.isHost ? '<span class="text-[10px] text-amber-400 font-digital ml-auto">關主</span>' : '<span class="text-[10px] text-emerald-400 ml-auto">就緒</span>'}
+          <span class="truncate font-bold text-emerald-950">${p.name}</span>
+          ${p.isHost ? '<span class="text-[10px] text-amber-700 font-digital font-bold ml-auto bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">關主</span>' : '<span class="text-[10px] text-emerald-700 font-bold ml-auto bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">就緒</span>'}
         </div>
       `).join('');
 
@@ -1830,15 +1848,15 @@
     function renderMultiOrderBar(players, currentIdx, isTurnMode) {
       const bar = document.getElementById('multi-order-bar');
       if (!isTurnMode) {
-        bar.innerHTML = `<span class="text-xs text-amber-400 px-2 font-digital">⚡ 零時差競速模式：所有特工平板同時搶答，比誰先破解！</span>`;
+        bar.innerHTML = `<span class="text-xs text-emerald-800 px-2 font-digital font-bold">⚡ 零時差競速模式：所有特工平板同時搶答，比誰先破解！</span>`;
         return;
       }
       const activeIdx = (currentIdx || 0) % players.length;
       bar.innerHTML = players.map((p, i) => `
-        <div class="flex-shrink-0 px-2.5 py-1 rounded-xl border text-xs font-digital font-bold flex items-center gap-1 ${
+        <div class="flex-shrink-0 px-2.5 py-1 rounded-xl border text-xs font-digital font-bold flex items-center gap-1 shadow-sm ${
           i === activeIdx 
-            ? 'bg-indigo-600 border-indigo-500 text-white shadow-md' 
-            : 'bg-slate-900 border-slate-800 text-slate-400'
+            ? 'bg-emerald-600 border-emerald-500 text-white shadow-md' 
+            : 'bg-white border-emerald-200 text-emerald-800'
         }">
           <span>${i + 1}.</span>
           <span class="truncate max-w-[65px]">${p.name}</span>
@@ -1852,19 +1870,19 @@
       count.innerText = `${history.length} 條情報`;
 
       if (history.length === 0) {
-        list.innerHTML = `<div class="h-full flex items-center justify-center text-slate-500 text-xs">開賽就緒！尚無特工送出線索</div>`;
+        list.innerHTML = `<div class="h-full flex items-center justify-center text-emerald-700/60 text-xs">開賽就緒！尚無特工送出線索</div>`;
         return;
       }
 
       list.innerHTML = history.slice().reverse().map(h => `
-        <div class="p-2 rounded-xl bg-slate-800 border border-slate-700/80 flex items-center justify-between text-xs">
+        <div class="p-2 rounded-xl bg-emerald-50/70 border border-emerald-200/80 flex items-center justify-between text-xs shadow-sm">
           <div class="space-y-0.5">
-            <span class="text-[10px] text-slate-400 block">${h.playerName}</span>
-            <span class="font-digital text-sm font-bold text-white tracking-widest">${h.guess}</span>
+            <span class="text-[10px] text-emerald-700 font-bold block">${h.playerName}</span>
+            <span class="font-digital text-sm font-bold text-emerald-950 tracking-widest">${h.guess}</span>
           </div>
           <div class="flex gap-1 font-digital font-bold">
-            <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">${h.a}A</span>
-            <span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400">${h.b}B</span>
+            <span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300">${h.a}A</span>
+            <span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300">${h.b}B</span>
           </div>
         </div>
       `).join('');
