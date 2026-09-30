@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>1A2B 數智對決 - 多人跨平板連線版</title>
+  <title>1A2B 數智對決 - 跨平板極速對決版</title>
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -15,7 +15,7 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <!-- Tone.js 音效合成 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
-  <!-- QRCode.js (生成掃碼快速加入房間) -->
+  <!-- QRCode.js (掃碼直連) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <script>
@@ -71,7 +71,7 @@
           <h1 class="text-base sm:text-lg font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">
             1A2B 數智對決
           </h1>
-          <p class="text-[10px] text-slate-400 font-digital tracking-wider hidden sm:block">跨平板即時互動系統</p>
+          <p class="text-[10px] text-slate-400 font-digital tracking-wider hidden sm:block">跨平板即時競技系統</p>
         </div>
       </div>
 
@@ -121,7 +121,6 @@
 
     <!-- ================= 1. 個人闖關模式 ================= -->
     <section id="mode-single-section" class="w-full space-y-4">
-      <!-- 未開始引導畫面 -->
       <div id="single-start-view" class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 text-center space-y-4 shadow-xl">
         <div class="w-16 h-16 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto text-2xl border border-indigo-500/20">
           <i class="fa-solid fa-play"></i>
@@ -135,9 +134,7 @@
         </button>
       </div>
 
-      <!-- 進行中畫面 -->
       <div id="single-play-view" class="hidden space-y-4">
-        <!-- 狀態列 -->
         <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 sm:p-4 flex items-center justify-between flex-wrap gap-2">
           <div class="flex items-center gap-4 sm:gap-6">
             <div>
@@ -160,14 +157,13 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-          <!-- 左側：輸入格與九宮格鍵盤 -->
           <div class="md:col-span-7 space-y-4">
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-lg flex flex-col items-center">
               <div id="single-slots-box" class="flex gap-2.5 sm:gap-3 my-2 justify-center"></div>
               <p class="text-xs text-slate-400 mt-2">請輸入 <span class="digit-tag font-digital">4</span> 個不重複數字</p>
             </div>
 
-            <!-- 推理筆記草稿盤 -->
+            <!-- 推理草稿盤 -->
             <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-3.5 shadow-md">
               <div class="flex items-center justify-between mb-2.5 px-1 text-[11px] text-slate-400">
                 <span class="font-bold"><i class="fa-solid fa-pencil mr-1 text-indigo-400"></i>推理草稿 (點擊標記)</span>
@@ -187,7 +183,7 @@
               </div>
             </div>
 
-            <!-- 虛擬按鍵九宮格 -->
+            <!-- 虛擬按鍵 -->
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-3 sm:p-4 shadow-lg">
               <div class="grid grid-cols-3 gap-2">
                 <button onclick="singleKeyPress('1')" class="h-12 rounded-2xl bg-slate-800 border border-slate-700 text-xl font-digital font-bold text-white hover:bg-slate-700 active:scale-95 transition">1</button>
@@ -211,7 +207,6 @@
             </div>
           </div>
 
-          <!-- 右側：歷史線索清單 -->
           <div class="md:col-span-5 bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-lg flex flex-col h-[440px]">
             <div class="flex items-center justify-between pb-2.5 border-b border-slate-800 text-xs">
               <span class="font-bold text-slate-300"><i class="fa-solid fa-list-ol mr-1.5 text-indigo-400"></i>猜測歷程</span>
@@ -225,7 +220,6 @@
 
     <!-- ================= 2. 雙人對決模式 ================= -->
     <section id="mode-duel-section" class="hidden w-full space-y-4">
-      <!-- 雙人大廳 -->
       <div id="duel-lobby-card" class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl max-w-lg mx-auto">
         <div class="text-center space-y-2 mb-6">
           <div class="w-14 h-14 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto text-2xl border border-indigo-500/20">
@@ -235,19 +229,30 @@
           <p class="text-xs text-slate-400">兩台平板互相秘密出題，支援掃碼秒速連線！</p>
         </div>
 
-        <div class="space-y-4">
-          <input type="text" id="duel-name-input" placeholder="輸入你的暱稱" value="學生" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
-          
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-            <button onclick="createDuelRoom()" class="py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-sm transition shadow active:scale-95 flex items-center justify-center gap-2">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          <!-- 開房區 (關主) -->
+          <div class="p-3 bg-slate-950/70 border border-slate-800 rounded-2xl space-y-2 flex flex-col justify-between">
+            <div class="space-y-1">
+              <span class="text-xs font-bold text-indigo-400 block"><i class="fa-solid fa-crown mr-1"></i>建立房間</span>
+              <input type="text" id="duel-host-name-input" placeholder="關主暱稱" value="關主" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+            </div>
+            <button onclick="createDuelRoom()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition shadow active:scale-95 flex items-center justify-center gap-1.5">
               <i class="fa-solid fa-plus-circle"></i>
-              <span>建立對戰房間</span>
+              <span>建立對戰房間 (關主)</span>
             </button>
-            <div class="flex gap-2">
-              <input type="text" id="duel-code-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="4位代碼" class="w-24 bg-slate-800 border border-slate-700 rounded-xl text-center font-digital text-base text-white focus:outline-none focus:border-indigo-500">
-              <button onclick="joinDuelRoom()" class="flex-1 py-3 bg-violet-600 hover:bg-violet-500 text-white font-bold rounded-xl text-sm transition shadow active:scale-95 flex items-center justify-center gap-1.5">
+          </div>
+
+          <!-- 加入區 (學生) -->
+          <div class="p-3 bg-slate-950/70 border border-slate-800 rounded-2xl space-y-2 flex flex-col justify-between">
+            <div class="space-y-1">
+              <span class="text-xs font-bold text-violet-400 block"><i class="fa-solid fa-user-graduate mr-1"></i>加入對戰</span>
+              <input type="text" id="duel-guest-name-input" placeholder="學生暱稱" value="學生" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+            </div>
+            <div class="flex gap-1.5">
+              <input type="text" id="duel-code-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="4位代碼" class="w-20 bg-slate-900 border border-slate-700 rounded-xl text-center font-digital text-sm text-white focus:outline-none focus:border-indigo-500">
+              <button onclick="joinDuelRoom()" class="flex-1 py-2.5 bg-violet-600 hover:bg-violet-500 text-white font-bold rounded-xl text-xs transition shadow active:scale-95 flex items-center justify-center gap-1">
                 <i class="fa-solid fa-right-to-bracket"></i>
-                <span>加入</span>
+                <span>加入 (學生)</span>
               </button>
             </div>
           </div>
@@ -268,7 +273,6 @@
           <span id="duel-display-code" class="text-3xl font-digital font-bold text-amber-400 tracking-widest">----</span>
         </div>
 
-        <!-- QR Code 容器 -->
         <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex flex-col items-center justify-center gap-2">
           <div id="duel-qrcode-box" class="p-2 bg-white rounded-xl shadow-lg flex items-center justify-center min-w-[130px] min-h-[130px]"></div>
           <span class="text-xs text-slate-400 flex items-center gap-1 mt-1">
@@ -284,7 +288,6 @@
 
       <!-- 秘密出題階段 -->
       <div id="duel-secret-card" class="hidden bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl max-w-md mx-auto space-y-4">
-        <!-- 雙方出題指示條 -->
         <div class="grid grid-cols-2 gap-2 p-2 bg-slate-950 rounded-2xl border border-slate-800 text-xs">
           <div class="flex items-center gap-1.5 px-2 py-1 bg-slate-900 rounded-xl">
             <span id="duel-my-ready-dot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
@@ -346,7 +349,6 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-          <!-- 我方輸入區 -->
           <div class="md:col-span-7 space-y-4">
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-lg flex flex-col items-center relative overflow-hidden">
               <div id="duel-lock-overlay" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-sm z-20 flex flex-col items-center justify-center p-4 text-center">
@@ -366,7 +368,6 @@
               <p class="text-xs text-slate-400 mt-2">破譯對方的神祕密碼！</p>
             </div>
 
-            <!-- 九宮格鍵盤 -->
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-3 sm:p-4 shadow-lg">
               <div class="grid grid-cols-3 gap-2">
                 <button onclick="duelKeyPress('1')" class="h-12 rounded-2xl bg-slate-800 text-xl font-digital font-bold text-white hover:bg-slate-700">1</button>
@@ -390,7 +391,6 @@
             </div>
           </div>
 
-          <!-- 右側：並排歷史看板 -->
           <div class="md:col-span-5 bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-lg flex flex-col h-[440px]">
             <div class="grid grid-cols-2 gap-2 pb-2.5 border-b border-slate-800 text-center text-xs font-bold">
               <span id="duel-title-p1" class="text-indigo-400">我方進度</span>
@@ -407,64 +407,73 @@
 
     <!-- ================= 3. 多人派對模式 ================= -->
     <section id="mode-multi-section" class="hidden w-full space-y-4">
-      <!-- 多人大廳 -->
       <div id="multi-lobby-card" class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl max-w-lg mx-auto">
         <div class="text-center space-y-2 mb-6">
           <div class="w-14 h-14 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto text-2xl border border-indigo-500/20">
             <i class="fa-solid fa-users"></i>
           </div>
           <h2 class="text-xl font-bold text-white">多人平板連線派對</h2>
-          <p class="text-xs text-slate-400">支援最多 20 位同學掃碼或輸碼同房競技！</p>
+          <p class="text-xs text-slate-400">支援最多 20 位特工掃碼或輸碼同房競技！</p>
         </div>
 
         <!-- 玩法選擇 -->
         <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 mb-4 space-y-2">
           <span class="text-xs text-slate-400 font-bold block">選擇派對玩法：</span>
           <div class="grid grid-cols-2 gap-2">
-            <label class="flex items-center gap-2 p-2 rounded-xl bg-slate-900 border border-slate-800 cursor-pointer hover:border-indigo-500">
-              <input type="radio" name="multi-rule-type" value="turn" checked class="text-indigo-600 focus:ring-0">
+            <label class="flex items-center gap-2 p-2 rounded-xl bg-slate-900 border border-slate-800 cursor-pointer hover:border-amber-500">
+              <input type="radio" name="multi-rule-type" value="race" checked class="text-indigo-600 focus:ring-0">
               <div>
-                <span class="text-xs font-bold text-white block">🔄 輪流接力猜</span>
-                <span class="text-[10px] text-slate-400">共用線索池輪流猜</span>
+                <span class="text-xs font-bold text-amber-400 block">⚡ 全員競速搶猜 (推薦)</span>
+                <span class="text-[10px] text-slate-400">所有人同步搶答衝刺</span>
               </div>
             </label>
-            <label class="flex items-center gap-2 p-2 rounded-xl bg-slate-900 border border-slate-800 cursor-pointer hover:border-amber-500">
-              <input type="radio" name="multi-rule-type" value="race" class="text-indigo-600 focus:ring-0">
+            <label class="flex items-center gap-2 p-2 rounded-xl bg-slate-900 border border-slate-800 cursor-pointer hover:border-indigo-500">
+              <input type="radio" name="multi-rule-type" value="turn" class="text-indigo-600 focus:ring-0">
               <div>
-                <span class="text-xs font-bold text-amber-400 block">⚡ 全員競速搶猜</span>
-                <span class="text-[10px] text-slate-400">無須等待同時衝刺</span>
+                <span class="text-xs font-bold text-white block">🔄 輪流接力猜</span>
+                <span class="text-[10px] text-slate-400">共用線索池依序出招</span>
               </div>
             </label>
           </div>
         </div>
 
-        <div class="space-y-4">
-          <input type="text" id="multi-name-input" placeholder="輸入你的暱稱" value="學生" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
-          
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-            <button onclick="createMultiRoom()" class="py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-sm transition shadow active:scale-95 flex items-center justify-center gap-2">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          <!-- 開立派對 (關主) -->
+          <div class="p-3 bg-slate-950/70 border border-slate-800 rounded-2xl space-y-2 flex flex-col justify-between">
+            <div class="space-y-1">
+              <span class="text-xs font-bold text-indigo-400 block"><i class="fa-solid fa-crown mr-1"></i>建立派對房間</span>
+              <input type="text" id="multi-host-name-input" placeholder="關主暱稱" value="關主" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+            </div>
+            <button onclick="createMultiRoom()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition shadow active:scale-95 flex items-center justify-center gap-1.5">
               <i class="fa-solid fa-plus-circle"></i>
-              <span>建立派對房間</span>
+              <span>建立派對 (關主)</span>
             </button>
-            <div class="flex gap-2">
-              <input type="text" id="multi-code-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="4位代碼" class="w-24 bg-slate-800 border border-slate-700 rounded-xl text-center font-digital text-base text-white focus:outline-none focus:border-indigo-500">
-              <button onclick="joinMultiRoom()" class="flex-1 py-3 bg-violet-600 hover:bg-violet-500 text-white font-bold rounded-xl text-sm transition shadow active:scale-95 flex items-center justify-center gap-1.5">
+          </div>
+
+          <!-- 加入派對 (學生) -->
+          <div class="p-3 bg-slate-950/70 border border-slate-800 rounded-2xl space-y-2 flex flex-col justify-between">
+            <div class="space-y-1">
+              <span class="text-xs font-bold text-violet-400 block"><i class="fa-solid fa-user-graduate mr-1"></i>加入派對</span>
+              <input type="text" id="multi-guest-name-input" placeholder="學生暱稱" value="學生" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+            </div>
+            <div class="flex gap-1.5">
+              <input type="text" id="multi-code-input" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="4位代碼" class="w-20 bg-slate-900 border border-slate-700 rounded-xl text-center font-digital text-sm text-white focus:outline-none focus:border-indigo-500">
+              <button onclick="joinMultiRoom()" class="flex-1 py-2.5 bg-violet-600 hover:bg-violet-500 text-white font-bold rounded-xl text-xs transition shadow active:scale-95 flex items-center justify-center gap-1">
                 <i class="fa-solid fa-right-to-bracket"></i>
-                <span>加入</span>
+                <span>加入 (學生)</span>
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 等待室 (含 QR Code) -->
+      <!-- 多人等待室 (含 QR Code) -->
       <div id="multi-waiting-card" class="hidden bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl max-w-lg mx-auto space-y-4">
         <div class="flex items-center justify-between border-b border-slate-800 pb-3">
           <span class="text-xs text-slate-400 font-digital">派對代碼: <span id="multi-display-code" class="text-indigo-400 font-bold text-xl px-2 py-0.5 rounded bg-indigo-500/10">----</span></span>
           <button onclick="leaveMulti()" class="text-xs text-slate-400 hover:text-rose-400">退出房間</button>
         </div>
 
-        <!-- QR Code -->
         <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex flex-col sm:flex-row items-center justify-center gap-4 text-center sm:text-left">
           <div id="multi-qrcode-box" class="p-2 bg-white rounded-xl shadow-lg flex items-center justify-center min-w-[120px] min-h-[120px]"></div>
           <div class="space-y-1">
@@ -487,18 +496,18 @@
         </div>
 
         <div id="multi-guest-notice" class="hidden text-center text-xs text-slate-400 py-2">
-          <i class="fa-solid fa-satellite-dish text-indigo-400 mr-1 animate-pulse"></i> 已就緒，等待房主啟動戰局...
+          <i class="fa-solid fa-satellite-dish text-indigo-400 mr-1 animate-pulse"></i> 已就緒，等待關主啟動戰局...
         </div>
       </div>
 
-      <!-- 正式戰局 -->
+      <!-- 正式多人戰局 -->
       <div id="multi-arena-card" class="hidden space-y-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 sm:p-4 flex items-center justify-between flex-wrap gap-2">
           <div class="flex items-center gap-3">
             <span class="text-xs font-digital text-slate-400">房號: <span id="multi-arena-room-tag" class="text-white font-bold">----</span></span>
-            <span id="multi-rule-tag" class="text-xs px-2.5 py-0.5 rounded bg-slate-800 text-slate-300 font-digital">接力模式</span>
-            <span id="multi-turn-badge" class="text-xs px-3 py-1 rounded-full font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
-              輪到同學思考中
+            <span id="multi-rule-tag" class="text-xs px-2.5 py-0.5 rounded bg-slate-800 text-slate-300 font-digital">⚡ 競速搶猜</span>
+            <span id="multi-turn-badge" class="text-xs px-3 py-1 rounded-full font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+              全員同步破譯中
             </span>
           </div>
           <button onclick="leaveMulti()" class="text-xs text-slate-400 hover:text-rose-400">
@@ -506,16 +515,16 @@
           </button>
         </div>
 
-        <!-- 輪流次序列表 -->
         <div id="multi-order-bar" class="flex gap-2 overflow-x-auto custom-scroll pb-1 px-1"></div>
 
         <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
           <div class="md:col-span-7 space-y-4">
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-lg flex flex-col items-center relative overflow-hidden">
+              <!-- 結束時結算覆蓋層 -->
               <div id="multi-lock-overlay" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-sm z-20 flex flex-col items-center justify-center p-4 text-center">
-                <i id="multi-lock-icon" class="fa-solid fa-hourglass-half text-3xl text-amber-400 animate-spin mb-2"></i>
-                <p id="multi-lock-text" class="text-sm font-bold text-white">等待隊友猜測中...</p>
-                <div id="multi-end-actions" class="hidden mt-3 flex items-center justify-center gap-2">
+                <i id="multi-lock-icon" class="fa-solid fa-trophy text-4xl text-amber-400 mb-2"></i>
+                <p id="multi-lock-text" class="text-sm font-bold text-white">戰局已結算完成！</p>
+                <div id="multi-end-actions" class="mt-3 flex items-center justify-center gap-2">
                   <button onclick="rematchMultiGame()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition shadow active:scale-95 flex items-center gap-1.5">
                     <i class="fa-solid fa-rotate-right"></i> 再比一次
                   </button>
@@ -526,7 +535,7 @@
               </div>
 
               <div id="multi-guess-slots" class="flex gap-2.5 sm:gap-3 my-2 justify-center"></div>
-              <p class="text-xs text-slate-400 mt-2">破譯全場神祕密碼！</p>
+              <p id="multi-guess-tip" class="text-xs text-slate-400 mt-2">破譯全場神祕密碼！</p>
             </div>
 
             <!-- 九宮格 -->
@@ -546,14 +555,14 @@
                 </button>
                 <button onclick="multiKeyPress('0')" class="h-12 rounded-2xl bg-slate-800 text-xl font-digital font-bold text-white hover:bg-slate-700">0</button>
                 <button id="btn-multi-submit" onclick="submitMultiGuess()" class="h-12 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold text-base shadow flex items-center justify-center gap-1.5 active:scale-95 transition">
-                  <span>猜！</span>
+                  <span id="btn-multi-submit-text">猜！</span>
                   <i class="fa-solid fa-bolt"></i>
                 </button>
               </div>
             </div>
           </div>
 
-          <!-- 右側：共享線索池 -->
+          <!-- 右側：共享情報池 -->
           <div class="md:col-span-5 bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-lg flex flex-col h-[440px]">
             <div class="flex items-center justify-between pb-2.5 border-b border-slate-800 text-xs">
               <span class="font-bold text-slate-300"><i class="fa-solid fa-tower-broadcast mr-1.5 text-indigo-400"></i>破譯線索池</span>
@@ -608,7 +617,7 @@
         </div>
       </div>
       <p class="text-[11px] text-slate-400 leading-relaxed">
-        若狀態顯示異常，請至 Firebase 後台確認已啟用「匿名驗證 (Anonymous Auth)」與 Firestore 測試規則。
+        已啟用長輪詢優化 (Long-Polling)，可自動克服各品牌平板在學校 Wi-Fi 下的串流連線延遲問題。
       </p>
     </div>
   </div>
@@ -621,12 +630,13 @@
     </div>
   </div>
 
-  <!-- FIREBASE 模組系統 -->
+  <!-- FIREBASE 模組系統 (長輪詢極速抗延遲) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { 
-      getFirestore, 
+      initializeFirestore, 
+      getFirestore,
       doc, 
       setDoc, 
       getDoc, 
@@ -656,7 +666,15 @@
       try {
         app = initializeApp(firebaseConfig);
         auth = getAuth(app);
-        db = getFirestore(app);
+
+        // 強制長輪詢通道，徹底避免學校 Wi-Fi 串流佇列阻滯
+        try {
+          db = initializeFirestore(app, {
+            experimentalForceLongPolling: true,
+          });
+        } catch (e) {
+          db = getFirestore(app);
+        }
 
         const cred = await signInAnonymously(auth);
         currentUser = cred.user;
@@ -666,7 +684,7 @@
         text.className = "text-emerald-400 font-bold";
 
         if (diagStatus) {
-          diagStatus.innerText = "連線成功 ✓";
+          diagStatus.innerText = "連線成功 (長輪詢模式) ✓";
           diagStatus.className = "font-bold text-emerald-400";
         }
         if (diagUid) {
@@ -714,13 +732,14 @@
     // 雙人模式
     let duelState = {
       roomId: null,
-      myRole: null, // 'p1' 或 'p2'
+      myRole: null,
       myName: '學生',
       mySecret: '',
       currentInput: '',
       lastData: null,
       isSubmitting: false,
-      unsubscribe: null
+      unsubscribe: null,
+      pollTimer: null
     };
 
     // 多人模式
@@ -730,10 +749,11 @@
       myName: '學生',
       myId: 'player_' + Math.random().toString(36).substring(2, 8),
       currentInput: '',
-      ruleType: 'turn',
+      ruleType: 'race',
       lastData: null,
       isSubmitting: false,
-      unsubscribe: null
+      unsubscribe: null,
+      pollTimer: null
     };
 
     /* Tone.js 音效控制 */
@@ -916,7 +936,7 @@
     };
 
     /* ============================================================
-       1. 個人闖關模式邏輯
+       1. 個人模式
        ============================================================ */
     function startSingleGame() {
       clearInterval(singleState.timerId);
@@ -1049,14 +1069,15 @@
     }
 
     /* ============================================================
-       2. 雙人對決邏輯 (毫秒級雙向同步與公平回合)
+       2. 雙人對決 (超低延遲同步)
        ============================================================ */
     async function createDuelRoom() {
       if (!window.FB_SYSTEM || !window.FB_SYSTEM.currentUser) {
         showToast("Firebase 連線未就緒，請稍候！", "error");
         return;
       }
-      const pName = document.getElementById('duel-name-input').value.trim() || '學生';
+      const hostInput = document.getElementById('duel-host-name-input');
+      const pName = (hostInput ? hostInput.value.trim() : '') || '關主';
       const code = generate4Code();
       const { db, doc, setDoc, currentUser } = window.FB_SYSTEM;
 
@@ -1092,7 +1113,7 @@
         renderQRCodeHelper('duel-qrcode-box', url.toString());
 
         listenDuelRoom(code);
-        showToast(`已建立房間 ${code}！`);
+        showToast(`已建立房間 ${code} (關主)！`);
       } catch (err) {
         showToast("建立房間失敗: " + err.message, "error");
       }
@@ -1104,7 +1125,9 @@
         return;
       }
       const code = document.getElementById('duel-code-input').value.trim();
-      const pName = document.getElementById('duel-name-input').value.trim() || '學生';
+      const guestInput = document.getElementById('duel-guest-name-input');
+      const pName = (guestInput ? guestInput.value.trim() : '') || '學生';
+
       if (!/^\d{4}$/.test(code)) {
         showToast("請輸入 4 位純數字代碼！", "error");
         return;
@@ -1144,21 +1167,18 @@
       });
 
       listenDuelRoom(code);
-      showToast(`成功加入對戰房間 ${code}！`);
+      showToast(`成功加入對戰房間 ${code} (學生)！`);
     }
 
     function listenDuelRoom(code) {
       if (duelState.unsubscribe) duelState.unsubscribe();
-      const { db, doc, onSnapshot, currentUser } = window.FB_SYSTEM;
+      if (duelState.pollTimer) clearInterval(duelState.pollTimer);
+
+      const { db, doc, onSnapshot, getDoc, currentUser } = window.FB_SYSTEM;
       const ref = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", code);
 
-      duelState.unsubscribe = onSnapshot(ref, (snap) => {
-        if (!snap.exists()) {
-          showToast("房間已被解除！");
-          leaveDuelLocal();
-          return;
-        }
-        const data = snap.data();
+      const handleData = (data) => {
+        if (!data) return;
         duelState.lastData = data;
 
         if (data.status === 'closed') {
@@ -1170,26 +1190,44 @@
         if (data.p1?.uid === currentUser.uid) duelState.myRole = 'p1';
         else if (data.p2?.uid === currentUser.uid) duelState.myRole = 'p2';
 
-        // 結算判定
         if (data.winner || data.status === 'finished') {
           renderDuelArena(data);
           handleDuelWinner(data);
           return;
         }
 
-        // 出題階段
         if (data.status === 'setup' || (data.p1 && data.p2 && data.status === 'waiting')) {
           renderDuelSecretView(data);
           return;
         }
 
-        // 正式開戰
         if (data.status === 'playing') {
           renderDuelArena(data);
         }
+      };
+
+      duelState.unsubscribe = onSnapshot(ref, (snap) => {
+        if (!snap.exists()) {
+          showToast("房間已被解除！");
+          leaveDuelLocal();
+          return;
+        }
+        handleData(snap.data());
       }, (err) => {
         console.error("Duel listener error:", err);
       });
+
+      // 輔助極速探測，確保護雙端出題與開賽在各平板 Wi-Fi 下毫秒同步
+      duelState.pollTimer = setInterval(async () => {
+        try {
+          if (!duelState.roomId) {
+            clearInterval(duelState.pollTimer);
+            return;
+          }
+          const s = await getDoc(ref);
+          if (s.exists()) handleData(s.data());
+        } catch (e) {}
+      }, 900);
     }
 
     function renderDuelSecretView(data) {
@@ -1232,8 +1270,7 @@
 
       updateSlotDisplay('duel-secret-slots', duelState.mySecret);
 
-      // 雙方出題皆完成，由 P1 統一觸發切換為 playing
-      if (data.p1?.ready && data.p2?.ready && isP1) {
+      if (data.p1?.ready && data.p2?.ready && isP1 && data.status !== 'playing') {
         const { db, doc, updateDoc } = window.FB_SYSTEM;
         updateDoc(doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", data.roomId), {
           status: 'playing',
@@ -1295,8 +1332,8 @@
       const oppObj = isP1 ? data.p2 : data.p1;
       const isMyTurn = data.currentTurn === duelState.myRole;
 
-      document.getElementById('duel-title-p1').innerText = `${myObj?.name || '我方'} (我方)`;
-      document.getElementById('duel-title-p2').innerText = `${oppObj?.name || '對手'} (對手)`;
+      document.getElementById('duel-title-p1').innerText = `${myObj?.name || '學生'} (我方)`;
+      document.getElementById('duel-title-p2').innerText = `${oppObj?.name || '學生'} (對手)`;
 
       const badge = document.getElementById('duel-turn-badge');
       const overlay = document.getElementById('duel-lock-overlay');
@@ -1329,7 +1366,7 @@
             ? "你已破譯成功！等待對手最後反擊..." 
             : `等待【${oppObj?.name || '對手'}】思考中...`;
           badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30";
-          badge.innerText = "對手思考中";
+          badge.innerText = `對手【${oppObj?.name || '學生'}】思考中`;
         }
       }
 
@@ -1446,7 +1483,7 @@
       } else {
         const winnerName = winner === 'p1' ? data.p1?.name : data.p2?.name;
         title = "對手率先破譯！";
-        sub = `由【${winnerName || '對手'}】拿下此局勝利！`;
+        sub = `由【${winnerName || '學生'}】拿下此局勝利！`;
       }
 
       const answer = isP1 ? data.p2?.secret : data.p1?.secret;
@@ -1493,7 +1530,8 @@
 
     function leaveDuelLocal() {
       if (duelState.unsubscribe) duelState.unsubscribe();
-      duelState = { roomId: null, myRole: null, myName: '學生', mySecret: '', currentInput: '', lastData: null, isSubmitting: false, unsubscribe: null };
+      if (duelState.pollTimer) clearInterval(duelState.pollTimer);
+      duelState = { roomId: null, myRole: null, myName: '學生', mySecret: '', currentInput: '', lastData: null, isSubmitting: false, unsubscribe: null, pollTimer: null };
       closeWinModal();
       document.getElementById('duel-lobby-card').classList.remove('hidden');
       document.getElementById('duel-waiting-card').classList.add('hidden');
@@ -1502,7 +1540,7 @@
     }
 
     /* ============================================================
-       3. 多人派對邏輯 (全體同時進退與再比一次名單同步)
+       3. 多人派對 (極速開賽與非阻塞遊戲畫面)
        ============================================================ */
     async function createMultiRoom() {
       if (!window.FB_SYSTEM || !window.FB_SYSTEM.currentUser) {
@@ -1548,7 +1586,7 @@
         renderQRCodeHelper('multi-qrcode-box', url.toString());
 
         listenMultiRoom(code);
-        showToast(`派對房間 ${code} 建立成功！`);
+        showToast(`派對房間 ${code} 建立成功 (關主)！`);
       } catch (err) {
         showToast("建立派對失敗: " + err.message, "error");
       }
@@ -1604,45 +1642,70 @@
       });
 
       listenMultiRoom(code);
-      showToast(`成功加入派對 ${code}！`);
+      showToast(`成功加入派對 ${code} (學生)！`);
     }
 
     function listenMultiRoom(code) {
       if (multiState.unsubscribe) multiState.unsubscribe();
-      const { db, doc, onSnapshot } = window.FB_SYSTEM;
+      if (multiState.pollTimer) clearInterval(multiState.pollTimer);
+
+      const { db, doc, onSnapshot, getDoc } = window.FB_SYSTEM;
       const ref = doc(db, "artifacts", "1a2b-game", "public", "data", "rooms", code);
 
-      multiState.unsubscribe = onSnapshot(ref, (snap) => {
-        if (!snap.exists()) {
-          showToast("派對已解散！");
-          leaveMultiLocal();
-          return;
-        }
-        const data = snap.data();
+      const handleData = (data) => {
+        if (!data) return;
         multiState.lastData = data;
 
         if (data.status === 'closed') {
-          showToast("房主已關閉派對房間！");
+          showToast("關主已關閉派對房間！");
           leaveMultiLocal();
           return;
         }
 
-        // 等待室更新
+        // 等待室狀態
         if (data.status === 'waiting') {
           renderMultiWaitingView(data);
           return;
         }
 
-        // 開戰或結束
+        // 開戰或結束：即刻進入遊戲畫面，絕不延遲
         if (data.status === 'playing' || data.status === 'finished') {
           renderMultiArena(data);
           if (data.status === 'finished' && data.winner) {
             handleMultiWinner(data);
           }
         }
+      };
+
+      // 1. 即時 Snapshot 監聽
+      multiState.unsubscribe = onSnapshot(ref, (snap) => {
+        if (!snap.exists()) {
+          showToast("派對已解散！");
+          leaveMultiLocal();
+          return;
+        }
+        handleData(snap.data());
       }, (err) => {
         console.error("Multi listener error:", err);
       });
+
+      // 2. 輔助心跳探查：每 800ms 主動探測，保證關主點擊開戰時，所有平板在 1 秒內無縫切入遊戲畫面
+      multiState.pollTimer = setInterval(async () => {
+        try {
+          if (!multiState.roomId) {
+            clearInterval(multiState.pollTimer);
+            return;
+          }
+          const s = await getDoc(ref);
+          if (s.exists()) {
+            const d = s.data();
+            // 若雲端已是 playing 且畫面仍在等待室，強制觸發進入
+            if (d.status === 'playing' && document.getElementById('multi-waiting-card') && !document.getElementById('multi-waiting-card').classList.contains('hidden')) {
+              handleData(d);
+            }
+          }
+        } catch (e) {}
+      }, 800);
     }
 
     function renderMultiWaitingView(data) {
@@ -1663,7 +1726,7 @@
             ${p.name.slice(0, 1)}
           </div>
           <span class="truncate font-medium text-slate-200">${p.name}</span>
-          ${p.isHost ? '<span class="text-[10px] text-amber-400 font-digital ml-auto">房主</span>' : '<span class="text-[10px] text-emerald-400 ml-auto">就緒</span>'}
+          ${p.isHost ? '<span class="text-[10px] text-amber-400 font-digital ml-auto">關主</span>' : '<span class="text-[10px] text-emerald-400 ml-auto">就緒</span>'}
         </div>
       `).join('');
 
@@ -1692,6 +1755,7 @@
     }
 
     function renderMultiArena(data) {
+      // 確保第一時間關閉等待室，切換至正式遊戲畫面
       document.getElementById('multi-waiting-card').classList.add('hidden');
       document.getElementById('multi-arena-card').classList.remove('hidden');
       document.getElementById('multi-arena-room-tag').innerText = data.roomId;
@@ -1703,37 +1767,45 @@
       const isMyTurn = currentTurnPlayer && currentTurnPlayer.id === multiState.myId;
 
       const overlay = document.getElementById('multi-lock-overlay');
-      const lockIcon = document.getElementById('multi-lock-icon');
-      const lockText = document.getElementById('multi-lock-text');
-      const endActions = document.getElementById('multi-end-actions');
       const badge = document.getElementById('multi-turn-badge');
+      const submitBtn = document.getElementById('btn-multi-submit');
+      const submitBtnText = document.getElementById('btn-multi-submit-text');
+      const guessTip = document.getElementById('multi-guess-tip');
 
+      // 只有在戰局「真正結束」時，才顯示覆蓋結算層（取消漏斗，直接顯示獎盃與再比按鈕）
       if (data.status === 'finished') {
         overlay.classList.remove('hidden');
-        lockIcon.className = "fa-solid fa-trophy text-4xl text-amber-400 mb-2";
-        lockText.innerText = "戰局已結算完成！";
-        endActions.classList.remove('hidden');
         badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40";
         badge.innerText = "🏆 戰局結束";
       } else {
-        endActions.classList.add('hidden');
+        // 戰局進行中：永遠隱藏覆蓋遮罩，讓所有學生「第一時間完整看見遊戲畫面與鍵盤」！
+        overlay.classList.add('hidden');
+
         if (isTurnMode) {
           if (isMyTurn) {
-            overlay.classList.add('hidden');
             badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
-            badge.innerText = "輪到你了！請送出線索";
+            badge.innerText = "🎯 輪到你了！請送出線索";
+            submitBtn.disabled = false;
+            submitBtn.className = "h-12 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold text-base shadow flex items-center justify-center gap-1.5 active:scale-95 transition cursor-pointer";
+            submitBtnText.innerText = "猜！";
+            guessTip.innerText = "輪到你的回合，破譯全場密碼！";
           } else {
-            overlay.classList.remove('hidden');
-            lockIcon.className = "fa-solid fa-hourglass-half text-3xl text-amber-400 animate-spin mb-2";
-            lockText.innerText = `等待【${currentTurnPlayer?.name || '特工'}】思考中...`;
-            badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30";
-            badge.innerText = `輪到 ${currentTurnPlayer?.name || '特工'}`;
+            // 他人思考時，僅溫和鎖定送出鈕，不遮蔽整個畫面
+            badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 animate-pulse";
+            badge.innerText = `⏳ 輪到【${currentTurnPlayer?.name || '特工'}】思考中...`;
+            submitBtn.disabled = true;
+            submitBtn.className = "h-12 rounded-2xl bg-slate-800 text-slate-500 font-bold text-xs flex items-center justify-center gap-1.5 cursor-not-allowed border border-slate-700";
+            submitBtnText.innerText = `等候中`;
+            guessTip.innerText = `目前輪到【${currentTurnPlayer?.name || '特工'}】出招，請準備你的下一擊！`;
           }
         } else {
-          // 競速搶猜：所有人皆解鎖
-          overlay.classList.add('hidden');
+          // ⚡ 全員競速模式：所有人皆完全解鎖，同時搶猜！
           badge.className = "text-xs px-3 py-1 rounded-full font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse";
-          badge.innerText = "全員競速中！搶先破譯者獲勝";
+          badge.innerText = "⚡ 全員競速衝刺中！率先猜中者奪冠";
+          submitBtn.disabled = false;
+          submitBtn.className = "h-12 rounded-2xl bg-gradient-to-r from-amber-600 to-indigo-600 text-white font-bold text-base shadow flex items-center justify-center gap-1.5 active:scale-95 transition cursor-pointer";
+          submitBtnText.innerText = "搶猜！";
+          guessTip.innerText = "零時差競速！所有人同時搶答，比誰先破解！";
         }
       }
 
@@ -1745,7 +1817,7 @@
     function renderMultiOrderBar(players, currentIdx, isTurnMode) {
       const bar = document.getElementById('multi-order-bar');
       if (!isTurnMode) {
-        bar.innerHTML = `<span class="text-xs text-amber-400 px-2 font-digital">⚡ 零時差競速：所有人同時搶答，比誰先破解！</span>`;
+        bar.innerHTML = `<span class="text-xs text-amber-400 px-2 font-digital">⚡ 零時差競速模式：所有特工平板同時搶答，比誰先破解！</span>`;
         return;
       }
       const activeIdx = (currentIdx || 0) % players.length;
@@ -1767,7 +1839,7 @@
       count.innerText = `${history.length} 條情報`;
 
       if (history.length === 0) {
-        list.innerHTML = `<div class="h-full flex items-center justify-center text-slate-500 text-xs">尚無同學送出線索</div>`;
+        list.innerHTML = `<div class="h-full flex items-center justify-center text-slate-500 text-xs">開賽就緒！尚無特工送出線索</div>`;
         return;
       }
 
@@ -1866,7 +1938,7 @@
     function handleMultiWinner(data) {
       const winner = data.winner;
       const isWinner = winner && winner.id === multiState.myId;
-      const winnerName = winner ? winner.name : '同學';
+      const winnerName = winner ? winner.name : '特工';
 
       if (isWinner) {
         playSound('win');
@@ -1899,7 +1971,7 @@
         players: updatedPlayers,
         updatedAt: Date.now()
       });
-      showToast("已重返設定室，主控可確認再戰名單！");
+      showToast("已重返設定室，關主可確認再戰名單！");
     }
 
     async function leaveMulti() {
@@ -1920,7 +1992,8 @@
 
     function leaveMultiLocal() {
       if (multiState.unsubscribe) multiState.unsubscribe();
-      multiState = { roomId: null, isHost: false, myName: '學生', myId: 'player_' + Math.random().toString(36).substring(2, 8), currentInput: '', ruleType: 'turn', lastData: null, isSubmitting: false, unsubscribe: null };
+      if (multiState.pollTimer) clearInterval(multiState.pollTimer);
+      multiState = { roomId: null, isHost: false, myName: '學生', myId: 'player_' + Math.random().toString(36).substring(2, 8), currentInput: '', ruleType: 'race', lastData: null, isSubmitting: false, unsubscribe: null, pollTimer: null };
       closeWinModal();
       document.getElementById('multi-lobby-card').classList.remove('hidden');
       document.getElementById('multi-waiting-card').classList.add('hidden');
@@ -1947,7 +2020,7 @@
       document.getElementById('diagnostic-modal').classList.add('hidden');
     }
 
-    // 鍵盤實體按鍵相容
+    // 實體按鍵監聽
     window.addEventListener('keydown', (e) => {
       if (['0','1','2','3','4','5','6','7','8','9'].includes(e.key)) {
         if (currentMode === 'single') singleKeyPress(e.key);
