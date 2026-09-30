@@ -350,16 +350,16 @@
 
         <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
           <div class="md:col-span-7 space-y-4">
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-lg flex flex-col items-center relative overflow-hidden">
-              <div id="duel-lock-overlay" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-sm z-20 flex flex-col items-center justify-center p-4 text-center">
-                <i id="duel-lock-icon" class="fa-solid fa-hourglass-half text-3xl text-amber-400 animate-spin mb-2"></i>
-                <p id="duel-lock-text" class="text-sm font-bold text-white">對手思考猜測中...</p>
-                <div id="duel-end-actions" class="hidden mt-3 flex items-center justify-center gap-2">
-                  <button onclick="restartDuelMatch()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition shadow active:scale-95 flex items-center gap-1.5">
-                    <i class="fa-solid fa-rotate-right"></i> 再比一次
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-lg flex flex-col items-center relative overflow-hidden min-h-[170px] justify-center">
+              <div id="duel-lock-overlay" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-md z-20 flex flex-col items-center justify-center p-3 text-center">
+                <i id="duel-lock-icon" class="fa-solid fa-trophy text-3xl text-amber-400 mb-1.5 drop-shadow"></i>
+                <p id="duel-lock-text" class="text-xs sm:text-sm font-bold text-white tracking-wide">戰局已結算完成！</p>
+                <div id="duel-end-actions" class="hidden mt-2.5 flex items-center justify-center gap-2 w-full max-w-xs px-2">
+                  <button onclick="restartDuelMatch()" class="flex-1 py-2 px-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition shadow active:scale-95 flex items-center justify-center gap-1.5 whitespace-nowrap">
+                    <i class="fa-solid fa-rotate-right text-[11px]"></i> 再比一次
                   </button>
-                  <button onclick="leaveDuel()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition border border-slate-700 active:scale-95 flex items-center gap-1.5">
-                    <i class="fa-solid fa-door-open"></i> 關閉房間
+                  <button onclick="leaveDuel()" class="flex-1 py-2 px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition border border-slate-700 active:scale-95 flex items-center justify-center gap-1.5 whitespace-nowrap">
+                    <i class="fa-solid fa-door-open text-[11px]"></i> 關閉房間
                   </button>
                 </div>
               </div>
@@ -519,17 +519,17 @@
 
         <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
           <div class="md:col-span-7 space-y-4">
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-lg flex flex-col items-center relative overflow-hidden">
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-lg flex flex-col items-center relative overflow-hidden min-h-[170px] justify-center">
               <!-- 結束時結算覆蓋層 -->
-              <div id="multi-lock-overlay" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-sm z-20 flex flex-col items-center justify-center p-4 text-center">
-                <i id="multi-lock-icon" class="fa-solid fa-trophy text-4xl text-amber-400 mb-2"></i>
-                <p id="multi-lock-text" class="text-sm font-bold text-white">戰局已結算完成！</p>
-                <div id="multi-end-actions" class="mt-3 flex items-center justify-center gap-2">
-                  <button onclick="rematchMultiGame()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition shadow active:scale-95 flex items-center gap-1.5">
-                    <i class="fa-solid fa-rotate-right"></i> 再比一次
+              <div id="multi-lock-overlay" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-md z-20 flex flex-col items-center justify-center p-3 text-center">
+                <i id="multi-lock-icon" class="fa-solid fa-trophy text-3xl text-amber-400 mb-1.5 drop-shadow"></i>
+                <p id="multi-lock-text" class="text-xs sm:text-sm font-bold text-white tracking-wide">戰局已結算完成！</p>
+                <div id="multi-end-actions" class="mt-2.5 flex items-center justify-center gap-2 w-full max-w-xs px-2">
+                  <button onclick="rematchMultiGame()" class="flex-1 py-2 px-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition shadow active:scale-95 flex items-center justify-center gap-1.5 whitespace-nowrap">
+                    <i class="fa-solid fa-rotate-right text-[11px]"></i> 再比一次
                   </button>
-                  <button onclick="leaveMulti()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition border border-slate-700 active:scale-95 flex items-center gap-1.5">
-                    <i class="fa-solid fa-door-open"></i> 離開房間
+                  <button onclick="leaveMulti()" class="flex-1 py-2 px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition border border-slate-700 active:scale-95 flex items-center justify-center gap-1.5 whitespace-nowrap">
+                    <i class="fa-solid fa-door-open text-[11px]"></i> 離開房間
                   </button>
                 </div>
               </div>
@@ -738,6 +738,7 @@
       currentInput: '',
       lastData: null,
       isSubmitting: false,
+      hasShownWinModal: false,
       unsubscribe: null,
       pollTimer: null
     };
@@ -752,6 +753,7 @@
       ruleType: 'race',
       lastData: null,
       isSubmitting: false,
+      hasShownWinModal: false,
       unsubscribe: null,
       pollTimer: null
     };
@@ -1088,6 +1090,7 @@
       duelState.currentInput = '';
       duelState.lastData = null;
       duelState.isSubmitting = false;
+      duelState.hasShownWinModal = false;
 
       const roomData = {
         roomId: code,
@@ -1158,6 +1161,7 @@
       duelState.currentInput = '';
       duelState.lastData = null;
       duelState.isSubmitting = false;
+      duelState.hasShownWinModal = false;
       digitCount = data.digitCount || 4;
 
       await updateDoc(ref, {
@@ -1192,7 +1196,10 @@
 
         if (data.winner || data.status === 'finished') {
           renderDuelArena(data);
-          handleDuelWinner(data);
+          if (!duelState.hasShownWinModal) {
+            duelState.hasShownWinModal = true;
+            handleDuelWinner(data);
+          }
           return;
         }
 
@@ -1498,6 +1505,7 @@
       closeWinModal();
       duelState.mySecret = '';
       duelState.currentInput = '';
+      duelState.hasShownWinModal = false;
 
       await updateDoc(ref, {
         status: 'setup',
@@ -1531,7 +1539,7 @@
     function leaveDuelLocal() {
       if (duelState.unsubscribe) duelState.unsubscribe();
       if (duelState.pollTimer) clearInterval(duelState.pollTimer);
-      duelState = { roomId: null, myRole: null, myName: '學生', mySecret: '', currentInput: '', lastData: null, isSubmitting: false, unsubscribe: null, pollTimer: null };
+      duelState = { roomId: null, myRole: null, myName: '學生', mySecret: '', currentInput: '', lastData: null, isSubmitting: false, hasShownWinModal: false, unsubscribe: null, pollTimer: null };
       closeWinModal();
       document.getElementById('duel-lobby-card').classList.remove('hidden');
       document.getElementById('duel-waiting-card').classList.add('hidden');
@@ -1559,6 +1567,7 @@
       multiState.ruleType = ruleType;
       multiState.currentInput = '';
       multiState.isSubmitting = false;
+      multiState.hasShownWinModal = false;
 
       const roomData = {
         roomId: code,
@@ -1634,6 +1643,7 @@
       multiState.ruleType = data.ruleType;
       multiState.currentInput = '';
       multiState.isSubmitting = false;
+      multiState.hasShownWinModal = false;
       digitCount = data.digitCount || 4;
 
       await updateDoc(ref, {
@@ -1672,7 +1682,10 @@
         if (data.status === 'playing' || data.status === 'finished') {
           renderMultiArena(data);
           if (data.status === 'finished' && data.winner) {
-            handleMultiWinner(data);
+            if (!multiState.hasShownWinModal) {
+              multiState.hasShownWinModal = true;
+              handleMultiWinner(data);
+            }
           }
         }
       };
@@ -1955,6 +1968,7 @@
 
       closeWinModal();
       multiState.currentInput = '';
+      multiState.hasShownWinModal = false;
 
       const updatedPlayers = (multiState.lastData?.players || []).map(p => ({
         ...p,
@@ -1993,7 +2007,7 @@
     function leaveMultiLocal() {
       if (multiState.unsubscribe) multiState.unsubscribe();
       if (multiState.pollTimer) clearInterval(multiState.pollTimer);
-      multiState = { roomId: null, isHost: false, myName: '學生', myId: 'player_' + Math.random().toString(36).substring(2, 8), currentInput: '', ruleType: 'race', lastData: null, isSubmitting: false, unsubscribe: null, pollTimer: null };
+      multiState = { roomId: null, isHost: false, myName: '學生', myId: 'player_' + Math.random().toString(36).substring(2, 8), currentInput: '', ruleType: 'race', lastData: null, isSubmitting: false, hasShownWinModal: false, unsubscribe: null, pollTimer: null };
       closeWinModal();
       document.getElementById('multi-lobby-card').classList.remove('hidden');
       document.getElementById('multi-waiting-card').classList.add('hidden');
